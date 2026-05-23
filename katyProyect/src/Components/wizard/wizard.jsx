@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import Step1Contact from "../step1contact/step1contact.jsx";
-import Step2Siniestro from "../step2siniestro/step2siniestro.jsx"
+import Step1Contact from "../step1contact/Step1contact.jsx";
+import Step2Siniestro from "../step2siniestro/Step2siniestro.jsx"
 
 export default function Wizard({ onCancel }) {
   const [step, setStep] = useState(1);
