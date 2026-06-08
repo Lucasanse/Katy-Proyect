@@ -1,7 +1,7 @@
 export default function Step1Contact({ formData, handleInput }) {
   return (
     <div className="space-y-6 animate-fade-in">
-      <h2 className="text-2xl font-bold text-slate-800 mb-2">Información del Tercero</h2>
+      <h2 className="text-2xl font-bold text-slate-800 mb-2">Información del asegurado </h2>
       
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-2">Nombre y Apellido completo</label>
