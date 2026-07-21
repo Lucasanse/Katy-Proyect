@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const aseguradorasTerceros = [
   "Federación Patronal", "La Caja de Ahorro y Seguro", "Sancor Seguros", 
@@ -6,11 +6,14 @@ const aseguradorasTerceros = [
 ];
 
 export default function Step4tercero({ formData, setFormData, nextStep, prevStep }) {
+  const [errors, setErrors] = useState([]);
+
   const addTercero = () => {
     setFormData(prev => ({
       ...prev,
       terceros: [...(prev.terceros || []), { dni: '', nombre: '', apellido: '', patente: '', aseguradora: '' }]
     }));
+    setErrors(prev => [...prev, {}]);
   };
 
   const removeTercero = (index) => {
@@ -18,19 +21,82 @@ export default function Step4tercero({ formData, setFormData, nextStep, prevStep
       ...prev,
       terceros: prev.terceros.filter((_, i) => i !== index)
     }));
+    setErrors(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const validateTerceroField = (field, value, index) => {
+    if (!value || value.toString().trim() === "") return "Este campo es obligatorio";
+    
+    if (field === "dni") {
+      const dniRegex = /^\d{6,9}$/;
+      if (!dniRegex.test(value)) {
+        return "El DNI debe tener entre 6 y 9 números";
+      }
+      
+      const valTrim = value.toString().trim();
+      if (parseInt(valTrim, 10) < 100000 || /^0+$/.test(valTrim)) {
+        return "Número de documento inválido";
+      }
+      if (valTrim === formData?.titularNumDoc?.toString().trim()) {
+        return "No puede ser igual al DNI del titular del vehículo";
+      }
+      if (!formData?.esMismoConductor && valTrim === formData?.conductorDocumento?.toString().trim()) {
+        return "No puede ser igual al DNI del conductor propio";
+      }
+      const esDuplicado = formData?.terceros?.some((t, i) => i !== index && t.dni.toString().trim() === valTrim);
+      if (esDuplicado) {
+        return "Este DNI ya fue ingresado en otro tercero";
+      }
+    } else if (field === "patente") {
+      const patenteRegex = /^([A-Z]{3}\d{3}|[A-Z]{2}\d{3}[A-Z]{2})$/;
+      if (!patenteRegex.test(value.toUpperCase())) {
+        return "Formato inválido. Debe ser XXX111 o XX111XX";
+      }
+    }
+    return "";
   };
 
   const handleTerceroChange = (index, field, value) => {
+    const cleanValue = field === "patente" ? value.toUpperCase() : value;
     const updated = [...formData.terceros];
-    updated[index][field] = value;
+    updated[index][field] = cleanValue;
     setFormData(prev => ({ ...prev, terceros: updated }));
+
+    const updatedErrors = [...errors];
+    if (!updatedErrors[index]) updatedErrors[index] = {};
+    updatedErrors[index][field] = validateTerceroField(field, cleanValue, index);
+    setErrors(updatedErrors);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.terceros || formData.terceros.length === 0) {
+      nextStep();
+      return;
+    }
+
+    let hasErrors = false;
+    const newErrors = formData.terceros.map((tercero, index) => {
+      const rowErrors = {};
+      Object.keys(tercero).forEach((key) => {
+        const error = validateTerceroField(key, tercero[key], index);
+        if (error) {
+          rowErrors[key] = error;
+          hasErrors = true;
+        }
+      });
+      return rowErrors;
+    });
+
+    setErrors(newErrors);
+    if (!hasErrors) nextStep();
   };
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); nextStep(); }} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8">
       <div className="flex justify-between items-center border-b pb-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Datos de quién te chocó</h2>
+          <h2 className="text-2xl font-bold text-slate-800">4. Datos de quién te chocó</h2>
           <p className="text-sm text-slate-500 mt-1">Registrá la información de los terceros involucrados en el accidente.</p>
         </div>
         <button 
@@ -63,40 +129,46 @@ export default function Step4tercero({ formData, setFormData, nextStep, prevStep
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase">DNI / Cédula</label>
                   <input 
-                    required type="text" value={tercero.dni} onChange={(e) => handleTerceroChange(index, 'dni', e.target.value)} placeholder="Ej: 30123456"
-                    className="w-full mt-2 border-0 border-b-2 border-slate-300 focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none bg-transparent"
+                    type="text" value={tercero.dni} onChange={(e) => handleTerceroChange(index, 'dni', e.target.value)} placeholder="Ej: 40123456"
+                    maxLength={9}
+                    className={`w-full mt-2 border-0 border-b-2 ${errors[index]?.dni ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none bg-transparent`}
                   />
+                  {errors[index]?.dni && <span className="text-xs text-red-500 mt-1 block">{errors[index]?.dni}</span>}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase">Nombre</label>
                   <input 
-                    required type="text" value={tercero.nombre} onChange={(e) => handleTerceroChange(index, 'nombre', e.target.value)}
-                    className="w-full mt-2 border-0 border-b-2 border-slate-300 focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none bg-transparent"
+                    type="text" value={tercero.nombre} onChange={(e) => handleTerceroChange(index, 'nombre', e.target.value)}
+                    className={`w-full mt-2 border-0 border-b-2 ${errors[index]?.nombre ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none bg-transparent`}
                   />
+                  {errors[index]?.nombre && <span className="text-xs text-red-500 mt-1 block">{errors[index]?.nombre}</span>}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase">Apellido</label>
                   <input 
-                    required type="text" value={tercero.apellido} onChange={(e) => handleTerceroChange(index, 'apellido', e.target.value)}
-                    className="w-full mt-2 border-0 border-b-2 border-slate-300 focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none bg-transparent"
+                    type="text" value={tercero.apellido} onChange={(e) => handleTerceroChange(index, 'apellido', e.target.value)}
+                    className={`w-full mt-2 border-0 border-b-2 ${errors[index]?.apellido ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none bg-transparent`}
                   />
+                  {errors[index]?.apellido && <span className="text-xs text-red-500 mt-1 block">{errors[index]?.apellido}</span>}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase">Patente del vehículo</label>
                   <input 
-                    required type="text" value={tercero.patente} onChange={(e) => handleTerceroChange(index, 'patente', e.target.value)} placeholder="AB123CD"
-                    className="w-full mt-2 border-0 border-b-2 border-slate-300 focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 uppercase focus:outline-none bg-transparent"
+                    type="text" value={tercero.patente} onChange={(e) => handleTerceroChange(index, 'patente', e.target.value)} placeholder="Ej: ABC123 o AB123CD"
+                    className={`w-full mt-2 border-0 border-b-2 ${errors[index]?.patente ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 uppercase focus:outline-none bg-transparent`}
                   />
+                  {errors[index]?.patente && <span className="text-xs text-red-500 mt-1 block">{errors[index]?.patente}</span>}
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 uppercase">Aseguradora del Tercero</label>
                   <select 
-                    required value={tercero.aseguradora} onChange={(e) => handleTerceroChange(index, 'aseguradora', e.target.value)}
-                    className="w-full mt-2 border-0 border-b-2 border-slate-300 focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 bg-transparent focus:outline-none"
+                    value={tercero.aseguradora} onChange={(e) => handleTerceroChange(index, 'aseguradora', e.target.value)}
+                    className={`w-full mt-2 border-0 border-b-2 ${errors[index]?.aseguradora ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 bg-transparent focus:outline-none`}
                   >
                     <option value="">Seleccioná una aseguradora...</option>
                     {aseguradorasTerceros.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
+                  {errors[index]?.aseguradora && <span className="text-xs text-red-500 mt-1 block">{errors[index]?.aseguradora}</span>}
                 </div>
               </div>
             </div>

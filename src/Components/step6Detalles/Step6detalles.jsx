@@ -1,14 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function Step6detalles({ formData, setFormData, prevStep, onSubmit }) {
+  const [error, setError] = useState("");
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.value.trim() !== "") setError("");
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.detallesAccidente || formData.detallesAccidente.trim() === "") {
+      setError("Por favor, ingresá una descripción de los daños y cómo ocurrió el hecho");
+      return;
+    }
+    onSubmit();
   };
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-slate-800">Información de los daños</h2>
+        <h2 className="text-2xl font-bold text-slate-800">6. Información de los daños</h2>
         <p className="text-sm text-slate-500 mt-1">Detallá la mecánica del accidente y qué partes del vehículo resultaron afectadas.</p>
       </div>
 
@@ -23,14 +35,14 @@ export default function Step6detalles({ formData, setFormData, prevStep, onSubmi
           </div>
 
           <textarea
-            required
             name="detallesAccidente"
-            value={formData.detallesAccidente}
+            value={formData?.detallesAccidente || ''}
             onChange={handleChange}
             rows={6}
             placeholder="Contanos qué pasó: Estaba detenido en el semáforo de la calle X cuando el vehículo tercero me chocó de atrás, dañando el paragolpes trasero y la tapa del baúl..."
-            className="w-full p-4 border border-slate-300 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-slate-800 focus:outline-none transition resize-none shadow-sm"
+            className={`w-full p-4 border ${error ? 'border-red-500' : 'border-slate-300'} rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-slate-800 focus:outline-none transition resize-none shadow-sm`}
           />
+          {error && <span className="text-xs text-red-500 mt-1 block">{error}</span>}
         </div>
       </div>
 
