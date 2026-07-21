@@ -1,6 +1,7 @@
 import React from 'react';
 
-export default function Step3Productor({ formData, setFormData, onSubmit }) {
+// 1. Cambiamos 'onSubmit' por 'nextStep' y agregamos 'prevStep' en las props
+export default function Step3Productor({ formData, setFormData, nextStep, prevStep }) {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -10,7 +11,8 @@ export default function Step3Productor({ formData, setFormData, onSubmit }) {
   };
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-8">
+    // 2. Al enviar el formulario, ejecutamos nextStep() para avanzar al Paso 4
+    <form onSubmit={(e) => { e.preventDefault(); nextStep(); }} className="space-y-8">
       <div>
         <h2 className="text-2xl font-bold text-slate-800">Intermediario / Asesor</h2>
         <p className="text-sm text-slate-500 mt-1">Si sos un productor gestionando este siniestro, por favor indicalo aquí.</p>
@@ -39,7 +41,7 @@ export default function Step3Productor({ formData, setFormData, onSubmit }) {
             <label className="block text-xs font-semibold text-slate-500 uppercase">Nombre y Apellido / Razón Social</label>
             <input 
               required={formData.esProductor} type="text" name="productorNombre" 
-              value={formData.productorNombre} onChange={handleChange}
+              value={formData.productorNombre || ''} onChange={handleChange}
               className="w-full mt-2 border-0 border-b-2 border-slate-300 focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none"
             />
           </div>
@@ -48,7 +50,7 @@ export default function Step3Productor({ formData, setFormData, onSubmit }) {
             <label className="block text-xs font-semibold text-slate-500 uppercase">Número de Matrícula (SSN)</label>
             <input 
               required={formData.esProductor} type="text" name="productorMatricula" 
-              value={formData.productorMatricula} onChange={handleChange}
+              value={formData.productorMatricula || ''} onChange={handleChange}
               className="w-full mt-2 border-0 border-b-2 border-slate-300 focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none"
             />
           </div>
@@ -57,7 +59,7 @@ export default function Step3Productor({ formData, setFormData, onSubmit }) {
             <label className="block text-xs font-semibold text-slate-500 uppercase">Teléfono comercial</label>
             <input 
               required={formData.esProductor} type="tel" name="productorTelefono" 
-              value={formData.productorTelefono} onChange={handleChange}
+              value={formData.productorTelefono || ''} onChange={handleChange}
               className="w-full mt-2 border-0 border-b-2 border-slate-300 focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none"
             />
           </div>
@@ -66,16 +68,20 @@ export default function Step3Productor({ formData, setFormData, onSubmit }) {
             <label className="block text-xs font-semibold text-slate-500 uppercase">Correo electrónico (Notificaciones)</label>
             <input 
               required={formData.esProductor} type="email" name="productorEmail" 
-              value={formData.productorEmail} onChange={handleChange}
+              value={formData.productorEmail || ''} onChange={handleChange}
               className="w-full mt-2 border-0 border-b-2 border-slate-300 focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none"
             />
           </div>
         </div>
       )}
 
-      <div className="flex justify-end pt-6">
-        <button type="submit" className="bg-emerald-600 text-white px-8 py-2.5 rounded-lg font-medium hover:bg-emerald-700 transition shadow-md">
-          Confirmar y Enviar
+      {/* 3. Botones de navegación inferiores (Volver y Siguiente) */}
+      <div className="flex justify-between pt-6 border-t border-slate-200">
+        <button type="button" onClick={prevStep} className="px-6 py-2.5 text-slate-600 font-medium hover:underline">
+          ← Paso anterior
+        </button>
+        <button type="submit" className="bg-blue-600 text-white px-8 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition shadow-md">
+          Siguiente
         </button>
       </div>
     </form>
