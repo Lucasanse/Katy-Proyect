@@ -1,94 +1,72 @@
-import { useState } from 'react';
-import Step1Contact from "../step1contact/Step1contact.jsx";
-import Step2Siniestro from "../step2siniestro/Step2siniestro.jsx"
+import React, { useState } from 'react';
+import Step1Titular from '../step1contact/Step1contact';
+import Step2Conductor from '../step2siniestro/Step2siniestro';
+import Step3Productor from '../step3productor/Step3Productor'; // Crea un componente nuevo o integra según tu carpeta
 
-export default function Wizard({ onCancel }) {
-  const [step, setStep] = useState(1);
-  
-  // Estado centralizado para todos los datos
+export default function Wizard() {
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    nombre: '',
-    dni: '',
-    telefono: '',
-    email: '',
-    fechaHora: '',
-    ubicacion: '',
-    relato: '',
-    aseguradora: '',
+    // RF-02 Titular
+    titularTipoDoc: 'DNI', titularNumDoc: '', titularNombre: '', titularApellido: '',
+    titularTelefono: '', titularEmail: '', titularPatente: '', titularSeguro: '',
+    // RF-03 Conductor
+    esMismoConductor: true,
+    conductorNombreCompleto: '', conductorDocumento: '', conductorTelefono: '',
+    conductorEmail: '', conductorLicencia: '', conductorVinculo: '',
+    // RF-04 Productor
+    esProductor: false,
+    productorNombre: '', productorMatricula: '', productorTelefono: '', productorEmail: ''
   });
 
-  const handleInput = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  const totalSteps = 3;
 
-  const nextStep = () => setStep(2);
-  const prevStep = () => setStep(1);
+  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+  const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Datos listos para enviar a PHP:", formData);
-    alert("Reclamo simulado con éxito. Abrí la consola para ver el JSON de los datos.");
-    onCancel(); // Vuelve al inicio tras finalizar
+  const handleSubmitFinal = () => {
+    console.log("Formulario final listo para enviar:", formData);
+    alert("¡Datos registrados con éxito!");
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-4 sm:p-8 mt-10 bg-white rounded-xl shadow-md border border-slate-200">
-      
-      {/* Cabecera / Indicador de progreso */}
-      <div className="flex justify-between border-b pb-4 mb-8">
-        <div className={`text-lg font-semibold ${step === 1 ? 'text-blue-600' : 'text-slate-400'}`}>
-          1. Datos de Contacto
-        </div>
-        <div className={`text-lg font-semibold ${step === 2 ? 'text-blue-600' : 'text-slate-400'}`}>
-          2. Detalle del Siniestro
-        </div>
-      </div>
-
-      {/* Formulario */}
-      <form onSubmit={step === 2 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }}>
+    <div className="min-h-screen bg-slate-100 py-8 px-4">
+      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
         
-        {step === 1 && (
-          <Step1Contact formData={formData} handleInput={handleInput} />
-        )}
-        
-        {step === 2 && (
-          <Step2Siniestro formData={formData} handleInput={handleInput} />
-        )}
-
-        {/* Aviso de documentación por correo (Solo en el paso final) */}
-        {step === 2 && (
-          <div className="mt-8 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-md">
-            <h4 className="text-yellow-800 font-bold mb-1">Carga de Documentación</h4>
-            <p className="text-sm text-yellow-700">
-              Para asegurar la calidad de las imágenes y archivos pesados (Fotos, Denuncia Administrativa, Cédula), por favor envíelos por correo electrónico a <strong>documentacion@estudio.com</strong> indicando el DNI del tercero en el Asunto.
-            </p>
+        {/* Cabecera / Barra de Progreso al estilo de las imágenes */}
+        <div className="bg-slate-50 border-b border-slate-200 px-6 py-4">
+          <div className="flex items-center justify-between mb-2">
+            {currentStep > 1 ? (
+              <button onClick={prevStep} className="text-blue-600 font-medium flex items-center hover:underline">
+                ← Paso anterior
+              </button>
+            ) : <span />}
+            <span className="text-sm font-semibold text-slate-500">
+              Paso {currentStep} de {totalSteps}
+            </span>
           </div>
-        )}
+          {/* Barra de progreso */}
+          <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+            <div 
+              className="bg-blue-600 h-full transition-all duration-300 ease-out"
+              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+            />
+          </div>
+        </div>
 
-        {/* Botonera de navegación */}
-        <div className="flex justify-between mt-10 pt-6 border-t border-slate-100">
-          {step === 1 ? (
-            <button type="button" onClick={onCancel} className="text-slate-500 hover:text-slate-800 font-medium px-4 py-2">
-              Cancelar
-            </button>
-          ) : (
-            <button type="button" onClick={prevStep} className="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-6 rounded-md font-medium transition-colors">
-              Volver Atrás
-            </button>
+        {/* Contenido de los Pasos */}
+        <div className="p-8">
+          {currentStep === 1 && (
+            <Step1Titular formData={formData} setFormData={setFormData} nextStep={nextStep} />
           )}
-
-          {step === 1 ? (
-            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-8 rounded-md font-semibold transition-colors shadow-sm">
-              Continuar
-            </button>
-          ) : (
-            <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-8 rounded-md font-semibold transition-colors shadow-sm">
-              Guardar Reclamo
-            </button>
+          {currentStep === 2 && (
+            <Step2Conductor formData={formData} setFormData={setFormData} nextStep={nextStep} prevStep={prevStep} />
+          )}
+          {currentStep === 3 && (
+            <Step3Productor formData={formData} setFormData={setFormData} prevStep={prevStep} onSubmit={handleSubmitFinal} />
           )}
         </div>
-      </form>
+
+      </div>
     </div>
   );
 }
