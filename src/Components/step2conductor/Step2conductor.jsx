@@ -57,7 +57,7 @@ export default function Step2conductor({ formData, setFormData, nextStep, prevSt
     const newErrors = {};
     const fieldsToValidate = [
       'conductorNombreCompleto', 'conductorDocumento', 'conductorTelefono',
-      'conductorEmail', 'conductorLicencia', 'conductorVinculo'
+      'conductorEmail', 'conductorVinculo'
     ];
 
     fieldsToValidate.forEach((field) => {
@@ -120,7 +120,7 @@ export default function Step2conductor({ formData, setFormData, nextStep, prevSt
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase">Tipo y Nº Documento (DNI / Cédula)</label>
+            <label className="block text-xs font-semibold text-slate-500 uppercase">Número de Documento (DNI)</label>
             <input 
               type="text" name="conductorDocumento" placeholder="Ej: 35123456"
               maxLength={9}
@@ -148,16 +148,6 @@ export default function Step2conductor({ formData, setFormData, nextStep, prevSt
               className={`w-full mt-2 border-0 border-b-2 ${errors.conductorEmail ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none`}
             />
             {errors.conductorEmail && <span className="text-xs text-red-500 mt-1 block">{errors.conductorEmail}</span>}
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase">Número de Licencia de conducir</label>
-            <input 
-              type="text" name="conductorLicencia" 
-              value={formData?.conductorLicencia || ''} onChange={handleChange}
-              className={`w-full mt-2 border-0 border-b-2 ${errors.conductorLicencia ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none`}
-            />
-            {errors.conductorLicencia && <span className="text-xs text-red-500 mt-1 block">{errors.conductorLicencia}</span>}
           </div>
 
           <div>
