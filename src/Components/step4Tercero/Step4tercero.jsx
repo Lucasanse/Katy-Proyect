@@ -49,8 +49,21 @@ export default function Step4tercero({ formData, setFormData, nextStep, prevStep
       }
     } else if (field === "patente") {
       const patenteRegex = /^([A-Z]{3}\d{3}|[A-Z]{2}\d{3}[A-Z]{2})$/;
-      if (!patenteRegex.test(value.toUpperCase())) {
+      const patenteClean = value.toUpperCase().trim();
+      
+      if (!patenteRegex.test(patenteClean)) {
         return "Formato inválido. Debe ser XXX111 o XX111XX";
+      }
+      
+      // Validación cruzada con la patente del titular
+      if (patenteClean === formData?.titularPatente?.toUpperCase().trim()) {
+        return "La patente no puede ser igual a la de tu vehículo (titular)";
+      }
+      
+      // Validación cruzada para que no se repitan patentes entre los propios terceros
+      const patenteDuplicada = formData?.terceros?.some((t, i) => i !== index && t.patente.toUpperCase().trim() === patenteClean);
+      if (patenteDuplicada) {
+        return "Esta patente ya fue registrada en otro tercero de la lista";
       }
     }
     return "";
@@ -96,8 +109,8 @@ export default function Step4tercero({ formData, setFormData, nextStep, prevStep
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="flex justify-between items-center border-b pb-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">4. Datos de quién te chocó</h2>
-          <p className="text-sm text-slate-500 mt-1">Registrá la información de los terceros involucrados en el accidente.</p>
+          <h2 className="text-2xl font-bold text-slate-800">4. Vehículos y Terceros Involucrados</h2>
+          <p className="text-sm text-slate-500 mt-1">Registrá la información de los otros vehículos y conductores que participaron en el siniestro.</p>
         </div>
         <button 
           type="button" onClick={addTercero}
@@ -127,7 +140,7 @@ export default function Step4tercero({ formData, setFormData, nextStep, prevStep
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase">DNI / Cédula</label>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase">Número de Documento (DNI)</label>
                   <input 
                     type="text" value={tercero.dni} onChange={(e) => handleTerceroChange(index, 'dni', e.target.value)} placeholder="Ej: 40123456"
                     maxLength={9}
