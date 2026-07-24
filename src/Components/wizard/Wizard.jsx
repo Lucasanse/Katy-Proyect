@@ -10,6 +10,7 @@ import Step7Verificacion from '../step7verificacion/Step7verificacion';
 import Step8Adjuntos from '../step8Adjuntos/Step8Adjuntos';
 import siniestrosService from '../../services/siniestros.service.js';
 import evidenciaService from '../../services/evidencia.service.js';
+import verificacionService from '../../services/verificacion.service.js';
 
 function buildSiniestroPayload(formData) {
   const payload = {
@@ -106,10 +107,11 @@ export default function Wizard({ skipVerification = false, onCancel }) {
     detallesAccidente: '',
   });
 
-  const [authData, setAuthData] = useState({ codigoGenerado: null, emailDestino: '', verificado: false });
+  const [authData, setAuthData] = useState({ emailDestino: '', verificado: false });
   const [siniestroCreado, setSiniestroCreado] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState('');
+  const [enviandoCodigo, setEnviandoCodigo] = useState(false);
 
   const goTo = (key) => setStepKey(key);
 
@@ -123,7 +125,23 @@ export default function Wizard({ skipVerification = false, onCancel }) {
     if (idx > 0) setStepKey(flow[idx - 1]);
   };
 
-  const iniciarVerificacion = () => {
+  // Reenvío desde el paso 7: si falla, el error se propaga para que Step7 lo muestre inline
+  const reenviarCodigo = async () => {
+    setEnviandoCodigo(true);
+    try {
+      await verificacionService.enviarCodigo(authData.emailDestino);
+    } finally {
+      setEnviandoCodigo(false);
+    }
+  };
+
+  // Al terminar el paso de Detalles: la abogada (admin) salta directo a Adjuntos, el público pasa por el mail
+  const handleStep6Continue = async () => {
+    if (skipVerification) {
+      goTo('adjuntos');
+      return;
+    }
+
     const emailDestino = formData.esProductor && formData.productorEmail
       ? formData.productorEmail
       : formData.titularEmail;
@@ -133,30 +151,22 @@ export default function Wizard({ skipVerification = false, onCancel }) {
       return;
     }
 
-    const nuevoCodigo = Math.floor(100000 + Math.random() * 900000).toString();
-
-    setAuthData({ codigoGenerado: nuevoCodigo, emailDestino, verificado: false });
-
-    console.log('=========================================');
-    console.log(`[SEGURIDAD] Código OTP generado: ${nuevoCodigo}`);
-    console.log(`[SEGURIDAD] Enviado por email a: ${emailDestino}`);
-    console.log('=========================================');
-
-    alert(`Se envió un código de verificación al correo: ${emailDestino}\n(Revisa la consola con F12 para ver el código generado de prueba)`);
-
-    goTo('verificacion');
-  };
-
-  // Al terminar el paso de Detalles: la abogada (admin) salta directo a Adjuntos, el público pasa por el mail
-  const handleStep6Continue = () => {
-    if (skipVerification) {
-      goTo('adjuntos');
-      return;
+    setEnviandoCodigo(true);
+    try {
+      await verificacionService.enviarCodigo(emailDestino);
+      setAuthData({ emailDestino, verificado: false });
+      goTo('verificacion');
+    } catch (err) {
+      alert(err.message || 'No se pudo enviar el código de verificación. Intentá nuevamente.');
+    } finally {
+      setEnviandoCodigo(false);
     }
-    iniciarVerificacion();
   };
 
-  const handleVerificacionExitosa = () => {
+  // Si el código es incorrecto o venció, verificacionService.confirmarCodigo tira un error
+  // que Step7 atrapa y muestra; acá solo se maneja el caso de éxito
+  const handleVerificarCodigo = async (codigoIngresado) => {
+    await verificacionService.confirmarCodigo(authData.emailDestino, codigoIngresado);
     setAuthData((prev) => ({ ...prev, verificado: true }));
     goTo('adjuntos');
   };
@@ -221,15 +231,21 @@ export default function Wizard({ skipVerification = false, onCancel }) {
           {stepKey === 'tercero' && <Step4tercero formData={formData} setFormData={setFormData} nextStep={nextStep} prevStep={prevStep} />}
           {stepKey === 'siniestro' && <Step5siniestro formData={formData} setFormData={setFormData} nextStep={nextStep} prevStep={prevStep} />}
           {stepKey === 'detalles' && (
-            <Step6detalles formData={formData} setFormData={setFormData} prevStep={prevStep} onSubmit={handleStep6Continue} />
+            <Step6detalles
+              formData={formData}
+              setFormData={setFormData}
+              prevStep={prevStep}
+              onSubmit={handleStep6Continue}
+              enviando={enviandoCodigo}
+            />
           )}
 
           {stepKey === 'verificacion' && (
             <Step7Verificacion
               emailDestino={authData.emailDestino}
-              codigoCorrecto={authData.codigoGenerado}
-              onSuccess={handleVerificacionExitosa}
-              onResend={iniciarVerificacion}
+              onVerificar={handleVerificarCodigo}
+              onReenviar={reenviarCodigo}
+              enviandoCodigo={enviandoCodigo}
               prevStep={prevStep}
             />
           )}

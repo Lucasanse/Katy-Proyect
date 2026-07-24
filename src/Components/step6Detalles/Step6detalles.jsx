@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function Step6detalles({ formData, setFormData, prevStep, onSubmit }) {
+export default function Step6detalles({ formData, setFormData, prevStep, onSubmit, enviando }) {
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
@@ -47,11 +47,15 @@ export default function Step6detalles({ formData, setFormData, prevStep, onSubmi
       </div>
 
       <div className="flex justify-between pt-6 border-t border-slate-200">
-        <button type="button" onClick={prevStep} className="px-6 py-2.5 text-slate-600 font-medium hover:underline">
+        <button type="button" onClick={prevStep} disabled={enviando} className="px-6 py-2.5 text-slate-600 font-medium hover:underline disabled:opacity-50">
           ← Paso anterior
         </button>
-        <button type="submit" className="bg-emerald-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-700 transition shadow-lg">
-          Confirmar y Enviar Reclamo
+        <button
+          type="submit"
+          disabled={enviando}
+          className="bg-emerald-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-700 disabled:opacity-60 transition shadow-lg"
+        >
+          {enviando ? 'Enviando código...' : 'Confirmar y Enviar Reclamo'}
         </button>
       </div>
     </form>

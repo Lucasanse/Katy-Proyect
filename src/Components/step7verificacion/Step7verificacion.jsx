@@ -1,25 +1,35 @@
 import React, { useState } from 'react';
 
-const Step7Verificacion = ({ emailDestino, codigoCorrecto, onSuccess, onResend }) => {
+const Step7Verificacion = ({ emailDestino, onVerificar, onReenviar, enviandoCodigo }) => {
   const [inputCodigo, setInputCodigo] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
+  const [errorReenvio, setErrorReenvio] = useState('');
+  const [verificando, setVerificando] = useState(false);
   const [reenviado, setReenviado] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (inputCodigo.trim() === codigoCorrecto) {
-      setError(false);
-      onSuccess();
-    } else {
-      setError(true);
+    setError('');
+    setVerificando(true);
+    try {
+      await onVerificar(inputCodigo.trim());
+    } catch (err) {
+      setError(err.message || 'El código ingresado es incorrecto. Verifícalo e intenta nuevamente.');
+    } finally {
+      setVerificando(false);
     }
   };
 
-  const handleReenviar = () => {
-    onResend();
-    setReenviado(true);
-    setError(false);
-    setTimeout(() => setReenviado(false), 4000);
+  const handleReenviar = async () => {
+    setErrorReenvio('');
+    setReenviado(false);
+    try {
+      await onReenviar();
+      setReenviado(true);
+      setTimeout(() => setReenviado(false), 4000);
+    } catch (err) {
+      setErrorReenvio(err.message || 'No se pudo reenviar el código.');
+    }
   };
 
   return (
@@ -30,8 +40,8 @@ const Step7Verificacion = ({ emailDestino, codigoCorrecto, onSuccess, onResend }
         </div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Verificación de Seguridad</h2>
         <p className="text-gray-600 text-sm">
-          Hemos enviado un código de 6 dígitos a <span className="font-semibold text-gray-800">{emailDestino}</span>. 
-          Por favor, ingrésalo para acceder a la carga de documentación[cite: 1].
+          Hemos enviado un código de 6 dígitos a <span className="font-semibold text-gray-800">{emailDestino}</span>.
+          Por favor, ingrésalo para acceder a la carga de documentación.
         </p>
       </div>
 
@@ -43,28 +53,25 @@ const Step7Verificacion = ({ emailDestino, codigoCorrecto, onSuccess, onResend }
             value={inputCodigo}
             onChange={(e) => {
               setInputCodigo(e.target.value);
-              setError(false);
+              setError('');
             }}
             placeholder="123456"
             className={`w-full text-center tracking-[0.5em] text-2xl font-mono py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-              error 
-                ? 'border-red-500 focus:ring-red-200 bg-red-50' 
+              error
+                ? 'border-red-500 focus:ring-red-200 bg-red-50'
                 : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
             }`}
             required
           />
-          {error && (
-            <p className="text-red-500 text-xs mt-2 font-medium">
-              El código ingresado es incorrecto. Verifícalo e intenta nuevamente.
-            </p>
-          )}
+          {error && <p className="text-red-500 text-xs mt-2 font-medium">{error}</p>}
         </div>
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors shadow-sm"
+          disabled={verificando}
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-3 rounded-lg transition-colors shadow-sm"
         >
-          Validar Código y Continuar
+          {verificando ? 'Verificando...' : 'Validar Código y Continuar'}
         </button>
       </form>
 
@@ -73,15 +80,13 @@ const Step7Verificacion = ({ emailDestino, codigoCorrecto, onSuccess, onResend }
         <button
           type="button"
           onClick={handleReenviar}
-          className="text-blue-600 font-semibold hover:underline focus:outline-none"
+          disabled={enviandoCodigo}
+          className="text-blue-600 font-semibold hover:underline focus:outline-none disabled:opacity-60"
         >
-          haz clic aquí para reenviar
+          {enviandoCodigo ? 'Reenviando...' : 'haz clic aquí para reenviar'}
         </button>
-        {reenviado && (
-          <p className="text-green-600 mt-2 font-medium">
-            ¡Nuevo código enviado con éxito!
-          </p>
-        )}
+        {reenviado && <p className="text-green-600 mt-2 font-medium">¡Nuevo código enviado con éxito!</p>}
+        {errorReenvio && <p className="text-red-500 mt-2 font-medium">{errorReenvio}</p>}
       </div>
     </div>
   );

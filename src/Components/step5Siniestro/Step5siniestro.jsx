@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { formatearFecha } from '../../utils/formatearFecha.js';
 
 const provinciasArgentina = [
   "Buenos Aires", "Catamarca", "Chaco", "Chubut", "Ciudad Autónoma de Buenos Aires",
@@ -201,6 +202,11 @@ export default function Step5siniestro({ formData, setFormData, nextStep, prevSt
             className={`w-full mt-2 border-0 border-b-2 ${errors.fechaSiniestro ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none`} 
           />
           {errors.fechaSiniestro && <span className="text-xs text-red-500 mt-1 block">{errors.fechaSiniestro}</span>}
+          {formData?.fechaSiniestro && !errors.fechaSiniestro && (
+            <span className="text-xs text-slate-400 mt-1 block">
+              Fecha seleccionada: {formatearFecha(formData.fechaSiniestro)}
+            </span>
+          )}
         </div>
 
         <div>
