@@ -168,12 +168,17 @@ export default function Wizard({ skipVerification = false, onCancel }) {
       const payload = buildSiniestroPayload(formData);
       const creado = await siniestrosService.create(payload);
 
-      const archivos = Object.entries(archivosPorCategoria || {}).filter(([, file]) => file);
-      for (const [tipoDocumento, archivo] of archivos) {
-        // Se sube una por una: si alguna falla, el siniestro ya quedó creado y el resto sigue intentándose
-        await evidenciaService.upload({ siniestroId: creado.id, tipoDocumento, archivo }).catch((err) => {
-          console.error(`No se pudo subir la evidencia "${tipoDocumento}":`, err);
-        });
+      // Categorías como "daños" mandan un array de archivos; el resto manda un único File
+      const entradas = Object.entries(archivosPorCategoria || {});
+      for (const [tipoDocumento, valor] of entradas) {
+        const archivosDeLaCategoria = Array.isArray(valor) ? valor : [valor];
+        for (const archivo of archivosDeLaCategoria) {
+          if (!archivo) continue;
+          // Se sube uno por uno: si alguno falla, el siniestro ya quedó creado y el resto sigue intentándose
+          await evidenciaService.upload({ siniestroId: creado.id, tipoDocumento, archivo }).catch((err) => {
+            console.error(`No se pudo subir la evidencia "${tipoDocumento}":`, err);
+          });
+        }
       }
 
       setSiniestroCreado(creado);

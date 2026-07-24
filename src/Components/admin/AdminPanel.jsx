@@ -4,6 +4,7 @@ import SiniestroDetalle from './SiniestroDetalle.jsx';
 import AseguradorasPanel from './AseguradorasPanel.jsx';
 import Wizard from '../wizard/Wizard.jsx';
 import siniestrosService from '../../services/siniestros.service.js';
+import { formatearFecha } from '../../utils/formatearFecha.js';
 import authService from '../../services/auth.service.js';
 
 const TABS = [
@@ -97,6 +98,29 @@ function SiniestrosTab() {
     setSiniestros((prev) => prev.map((s) => (s.id === actualizado.id ? { ...s, estado: actualizado.estado } : s)));
   }
 
+  function handleUpdated(actualizado) {
+    setSiniestros((prev) =>
+      prev.map((s) =>
+        s.id === actualizado.id
+          ? {
+              ...s,
+              fechaSiniestro: actualizado.fechaSiniestro,
+              horaSiniestro: actualizado.horaSiniestro,
+              lugarCalle: actualizado.lugarCalle,
+              lugarLocalidad: actualizado.lugarLocalidad,
+              titular: actualizado.titular,
+            }
+          : s,
+      ),
+    );
+  }
+
+  function handleDeleted() {
+    setSelectedId(null);
+    setSelectedSiniestro(null);
+    loadSiniestros();
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
@@ -180,7 +204,7 @@ function SiniestrosTab() {
                   >
                     <td className="px-4 py-3 text-slate-800 font-medium">#{siniestro.id}</td>
                     <td className="px-4 py-3 text-slate-600">
-                      {siniestro.fechaSiniestro} {siniestro.horaSiniestro}
+                      {formatearFecha(siniestro.fechaSiniestro)} {siniestro.horaSiniestro}
                     </td>
                     <td className="px-4 py-3 text-slate-600">
                       {siniestro.titular ? `${siniestro.titular.nombre} ${siniestro.titular.apellido}` : '—'}
@@ -228,6 +252,8 @@ function SiniestrosTab() {
             setSelectedSiniestro(null);
           }}
           onEstadoUpdated={handleEstadoUpdated}
+          onUpdated={handleUpdated}
+          onDeleted={handleDeleted}
         />
       )}
     </div>

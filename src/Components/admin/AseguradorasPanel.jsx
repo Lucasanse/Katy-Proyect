@@ -7,6 +7,7 @@ export default function AseguradorasPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [order, setOrder] = useState('asc');
+  const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
   const [creating, setCreating] = useState(false);
 
@@ -28,11 +29,16 @@ export default function AseguradorasPanel() {
   }, []);
 
   const ordenadas = useMemo(() => {
-    const copia = [...aseguradoras];
+    const busqueda = search.trim().toLowerCase();
+    const filtradas = busqueda
+      ? aseguradoras.filter((a) => a.nombre.toLowerCase().includes(busqueda))
+      : aseguradoras;
+
+    const copia = [...filtradas];
     copia.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
     if (order === 'desc') copia.reverse();
     return copia;
-  }, [aseguradoras, order]);
+  }, [aseguradoras, order, search]);
 
   function toggleOrder() {
     setOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -52,13 +58,22 @@ export default function AseguradorasPanel() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
-        <h2 className="text-xl font-semibold text-slate-900">Aseguradoras ({aseguradoras.length})</h2>
-        <button
-          onClick={() => setCreating(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-        >
-          + Agregar aseguradora
-        </button>
+        <h2 className="text-xl font-semibold text-slate-900">Aseguradoras ({ordenadas.length})</h2>
+        <div className="flex items-center gap-3 flex-wrap">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nombre..."
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
+          />
+          <button
+            onClick={() => setCreating(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            + Agregar aseguradora
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -95,7 +110,7 @@ export default function AseguradorasPanel() {
               ) : ordenadas.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="text-center text-slate-500 px-4 py-8">
-                    No hay aseguradoras cargadas.
+                    {search ? 'No hay aseguradoras que coincidan con la búsqueda.' : 'No hay aseguradoras cargadas.'}
                   </td>
                 </tr>
               ) : (

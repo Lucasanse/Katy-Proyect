@@ -20,4 +20,12 @@ function updateEstado(id, estado) {
   return api.put(`/siniestros/${id}/estado`, { estado });
 }
 
-export default { list, getById, create, updateEstado };
+function update(id, data) {
+  return api.put(`/siniestros/${id}`, data);
+}
+
+function remove(id) {
+  return api.delete(`/siniestros/${id}`);
+}
+
+export default { list, getById, create, updateEstado, update, remove };
