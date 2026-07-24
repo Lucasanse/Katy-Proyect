@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
-
-const aseguradorasTerceros = [
-  "Federación Patronal", "La Caja de Ahorro y Seguro", "Sancor Seguros", 
-  "Allianz Argentina", "Mercantil Andina", "Seguros Rivadavia", "San Cristóbal", "La Segunda", "Otra"
-];
+import React, { useEffect, useState } from 'react';
+import aseguradorasService from '../../services/aseguradoras.service.js';
 
 export default function Step4tercero({ formData, setFormData, nextStep, prevStep }) {
   const [errors, setErrors] = useState([]);
+  const [aseguradoras, setAseguradoras] = useState([]);
+  const [loadingAseguradoras, setLoadingAseguradoras] = useState(true);
+
+  useEffect(() => {
+    aseguradorasService
+      .list()
+      .then(setAseguradoras)
+      .catch(() => setAseguradoras([]))
+      .finally(() => setLoadingAseguradoras(false));
+  }, []);
 
   const addTercero = () => {
     setFormData(prev => ({
@@ -131,11 +137,9 @@ export default function Step4tercero({ formData, setFormData, nextStep, prevStep
             <div key={index} className="p-5 bg-slate-50 border border-slate-200 rounded-xl relative">
               <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200">
                 <span className="font-bold text-slate-700 text-sm uppercase tracking-wider">Vehículo / Tercero #{index + 1}</span>
-                {formData.terceros.length > 1 && (
-                  <button type="button" onClick={() => removeTercero(index)} className="text-red-500 hover:text-red-700 text-sm font-medium">
-                    Eliminar
-                  </button>
-                )}
+                <button type="button" onClick={() => removeTercero(index)} className="text-red-500 hover:text-red-700 text-sm font-medium">
+                  Eliminar
+                </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -174,12 +178,13 @@ export default function Step4tercero({ formData, setFormData, nextStep, prevStep
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 uppercase">Aseguradora del Tercero</label>
-                  <select 
+                  <select
                     value={tercero.aseguradora} onChange={(e) => handleTerceroChange(index, 'aseguradora', e.target.value)}
+                    disabled={loadingAseguradoras}
                     className={`w-full mt-2 border-0 border-b-2 ${errors[index]?.aseguradora ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 bg-transparent focus:outline-none`}
                   >
-                    <option value="">Seleccioná una aseguradora...</option>
-                    {aseguradorasTerceros.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="">{loadingAseguradoras ? 'Cargando aseguradoras...' : 'Seleccioná una aseguradora...'}</option>
+                    {aseguradoras.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
                   </select>
                   {errors[index]?.aseguradora && <span className="text-xs text-red-500 mt-1 block">{errors[index]?.aseguradora}</span>}
                 </div>

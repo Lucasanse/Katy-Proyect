@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
-
-const aseguradorasCatalogo = [
-  "Federación Patronal", "La Caja de Ahorro y Seguro", "Sancor Seguros", 
-  "Allianz Argentina", "Mercantil Andina", "Seguros Rivadavia", "San Cristóbal", "La Segunda", "Zurich Argentina", "Otra"
-];
+import React, { useEffect, useState } from 'react';
+import aseguradorasService from '../../services/aseguradoras.service.js';
 
 export default function Step1contact({ formData, setFormData, nextStep }) {
   const [errors, setErrors] = useState({});
+  const [aseguradoras, setAseguradoras] = useState([]);
+  const [loadingAseguradoras, setLoadingAseguradoras] = useState(true);
+
+  useEffect(() => {
+    aseguradorasService
+      .list()
+      .then(setAseguradoras)
+      .catch(() => setAseguradoras([]))
+      .finally(() => setLoadingAseguradoras(false));
+  }, []);
 
   const validateField = (name, value) => {
     let error = "";
@@ -146,12 +152,13 @@ export default function Step1contact({ formData, setFormData, nextStep }) {
 
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase">Compañía de seguros</label>
-          <select 
+          <select
             name="titularSeguro" value={formData?.titularSeguro || ''} onChange={handleChange}
+            disabled={loadingAseguradoras}
             className={`w-full mt-2 border-0 border-b-2 ${errors.titularSeguro ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 bg-transparent`}
           >
-            <option value="">Seleccioná tu aseguradora</option>
-            {aseguradorasCatalogo.map(c => <option key={c} value={c}>{c}</option>)}
+            <option value="">{loadingAseguradoras ? 'Cargando aseguradoras...' : 'Seleccioná tu aseguradora'}</option>
+            {aseguradoras.map(a => <option key={a.id} value={a.id}>{a.nombre}</option>)}
           </select>
           {errors.titularSeguro && <span className="text-xs text-red-500 mt-1 block">{errors.titularSeguro}</span>}
         </div>

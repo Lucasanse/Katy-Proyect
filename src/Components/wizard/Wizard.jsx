@@ -1,140 +1,226 @@
 import React, { useState } from 'react';
 
-// Importaciones previas intactas
 import Step1contact from '../step1contact/Step1contact';
 import Step2conductor from '../step2conductor/Step2conductor';
 import Step3Productor from '../step3productor/Step3Productor';
 import Step4tercero from '../step4Tercero/Step4tercero';
 import Step5siniestro from '../step5Siniestro/Step5siniestro';
 import Step6detalles from '../step6Detalles/Step6detalles';
+import Step7Verificacion from '../step7verificacion/Step7verificacion';
+import Step8Adjuntos from '../step8Adjuntos/Step8Adjuntos';
+import siniestrosService from '../../services/siniestros.service.js';
+import evidenciaService from '../../services/evidencia.service.js';
 
-// 1. NUEVAS IMPORTACIONES (asegúrate de crear las carpetas y archivos correspondientes)
-import Step7Verificacion from '../step7verificacion/Step7Verificacion';
-import Step8Adjuntos from '../step8adjuntos/Step8Adjuntos';
+function buildSiniestroPayload(formData) {
+  const payload = {
+    fechaSiniestro: formData.fechaSiniestro,
+    horaSiniestro: formData.horaSiniestro,
+    huboHeridos: Boolean(formData.huboHeridos),
+    lugarCalle: formData.lugarCalle,
+    lugarLocalidad: formData.lugarLocalidad,
+    lugarProvincia: formData.lugarProvincia,
+    detallesAccidente: formData.detallesAccidente,
+    titular: {
+      tipoDoc: formData.titularTipoDoc,
+      numDoc: formData.titularNumDoc,
+      nombre: formData.titularNombre,
+      apellido: formData.titularApellido,
+      patente: formData.titularPatente,
+      telefono: formData.titularTelefono,
+      email: formData.titularEmail,
+      aseguradoraId: Number(formData.titularSeguro),
+    },
+  };
 
-export default function Wizard() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 8; // 2. Actualizamos el total a 8 pasos
+  if (typeof formData.latitud === 'number' && typeof formData.longitud === 'number') {
+    payload.latitud = formData.latitud;
+    payload.longitud = formData.longitud;
+  }
 
-  // Estado global para todos los requerimientos (RF-02 al RF-07)
+  if (!formData.esMismoConductor) {
+    payload.conductor = {
+      nombreCompleto: formData.conductorNombreCompleto,
+      documento: formData.conductorDocumento,
+      telefono: formData.conductorTelefono || undefined,
+      email: formData.conductorEmail || undefined,
+      vinculo: formData.conductorVinculo || undefined,
+    };
+  }
+
+  if (formData.esProductor) {
+    payload.productor = {
+      esProductor: true,
+      nombre: formData.productorNombre,
+      matricula: formData.productorMatricula,
+      telefono: formData.productorTelefono,
+      email: formData.productorEmail,
+    };
+  }
+
+  const terceros = (formData.terceros || []).filter((t) => t.dni || t.nombre || t.apellido || t.patente);
+  if (terceros.length) {
+    payload.terceros = terceros.map((t) => ({
+      dni: t.dni || undefined,
+      nombre: t.nombre || undefined,
+      apellido: t.apellido || undefined,
+      patente: t.patente || undefined,
+      aseguradoraId: t.aseguradora ? Number(t.aseguradora) : undefined,
+    }));
+  }
+
+  return payload;
+}
+
+// Flujo público: pasa por la verificación por mail (RF-07).
+// Flujo admin (skipVerification): la abogada ya está autenticada, no tiene sentido pedirle un código a su propio mail.
+const FLOW_CON_VERIFICACION = ['contacto', 'conductor', 'productor', 'tercero', 'siniestro', 'detalles', 'verificacion', 'adjuntos'];
+const FLOW_SIN_VERIFICACION = ['contacto', 'conductor', 'productor', 'tercero', 'siniestro', 'detalles', 'adjuntos'];
+
+export default function Wizard({ skipVerification = false, onCancel }) {
+  const flow = skipVerification ? FLOW_SIN_VERIFICACION : FLOW_CON_VERIFICACION;
+  const [stepKey, setStepKey] = useState(flow[0]);
+  const stepIndex = flow.indexOf(stepKey);
+  const totalSteps = flow.length;
+
   const [formData, setFormData] = useState({
-    // RF-02: Titular
+    // Titular
     titularTipoDoc: 'DNI', titularNumDoc: '', titularNombre: '', titularApellido: '',
     titularPatente: '', titularTelefono: '', titularEmail: '', titularSeguro: '',
 
-    // RF-03: Conductor
+    // Conductor
     esMismoConductor: true, conductorNombreCompleto: '', conductorDocumento: '',
-    conductorTelefono: '', conductorEmail: '', conductorLicencia: '', conductorVinculo: '',
+    conductorTelefono: '', conductorEmail: '', conductorVinculo: '',
 
-    // RF-04: Productor
+    // Productor
     esProductor: false, productorNombre: '', productorMatricula: '',
     productorTelefono: '', productorEmail: '',
 
-    // RF-06: Terceros (Array dinámico ilimitado)
-    terceros: [{ dni: '', nombre: '', apellido: '', patente: '', aseguradora: '' }],
+    // Terceros (array dinámico)
+    terceros: [],
 
-    // RF-05: Siniestro + Maps JS API
+    // Siniestro + mapa
     fechaSiniestro: '', horaSiniestro: '', huboHeridos: false,
     lugarCalle: '', lugarLocalidad: '', lugarProvincia: '', latitud: null, longitud: null,
 
-    // RF-07: Detalles
-    detallesAccidente: ''
+    // Detalles
+    detallesAccidente: '',
   });
 
-  // 3. NUEVO ESTADO para controlar la seguridad y verificación OTP
-  const [authData, setAuthData] = useState({
-    codigoGenerado: null,
-    emailDestino: '',
-    verificado: false
-  });
+  const [authData, setAuthData] = useState({ codigoGenerado: null, emailDestino: '', verificado: false });
+  const [siniestroCreado, setSiniestroCreado] = useState(null);
+  const [enviando, setEnviando] = useState(false);
+  const [errorEnvio, setErrorEnvio] = useState('');
 
-  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
-  const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
+  const goTo = (key) => setStepKey(key);
 
-  // 4. NUEVA FUNCIÓN que se ejecuta al terminar el Paso 6
+  const nextStep = () => {
+    const idx = flow.indexOf(stepKey);
+    if (idx < flow.length - 1) setStepKey(flow[idx + 1]);
+  };
+
+  const prevStep = () => {
+    const idx = flow.indexOf(stepKey);
+    if (idx > 0) setStepKey(flow[idx - 1]);
+  };
+
   const iniciarVerificacion = () => {
-    // Si en el paso 3 eligió que hay productor y puso su mail, se lo mandamos al productor. Si no, al titular.
-    const emailDestino = formData.esProductor && formData.productorEmail 
-      ? formData.productorEmail 
+    const emailDestino = formData.esProductor && formData.productorEmail
+      ? formData.productorEmail
       : formData.titularEmail;
 
     if (!emailDestino) {
-      alert("Por favor, regresa e ingresa un email válido para el Titular o el Productor.");
+      alert('Por favor, regresa e ingresa un email válido para el Titular o el Productor.');
       return;
     }
 
-    // Generamos un código numérico aleatorio de 6 dígitos
     const nuevoCodigo = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Guardamos en el estado el código y el correo
-    setAuthData({
-      codigoGenerado: nuevoCodigo,
-      emailDestino: emailDestino,
-      verificado: false
-    });
+    setAuthData({ codigoGenerado: nuevoCodigo, emailDestino, verificado: false });
 
-    // SIMULACIÓN DE ENVÍO DE EMAIL (acá luego conectarás tu backend o EmailJS)
-    console.log(`=========================================`);
+    console.log('=========================================');
     console.log(`[SEGURIDAD] Código OTP generado: ${nuevoCodigo}`);
     console.log(`[SEGURIDAD] Enviado por email a: ${emailDestino}`);
-    console.log(`=========================================`);
-    
+    console.log('=========================================');
+
     alert(`Se envió un código de verificación al correo: ${emailDestino}\n(Revisa la consola con F12 para ver el código generado de prueba)`);
 
-    // Avanzamos al Paso 7
-    setCurrentStep(7);
+    goTo('verificacion');
   };
 
-  // 5. FUNCIÓN que se ejecuta cuando el código en el Paso 7 es correcto
+  // Al terminar el paso de Detalles: la abogada (admin) salta directo a Adjuntos, el público pasa por el mail
+  const handleStep6Continue = () => {
+    if (skipVerification) {
+      goTo('adjuntos');
+      return;
+    }
+    iniciarVerificacion();
+  };
+
   const handleVerificacionExitosa = () => {
-    setAuthData(prev => ({ ...prev, verificado: true }));
-    setCurrentStep(8); // Pasamos por fin al RF-08 (Adjuntos)
+    setAuthData((prev) => ({ ...prev, verificado: true }));
+    goTo('adjuntos');
   };
 
-  // Función finalísima cuando ya cargó las fotos en el Paso 8
-  const handleSubmitFinal = () => {
-    console.log("Formulario final con documentación enviado:", formData);
-    alert("¡Siniestro y documentación registrados correctamente!");
+  const handleSubmitFinal = async (archivosPorCategoria) => {
+    setEnviando(true);
+    setErrorEnvio('');
+    try {
+      const payload = buildSiniestroPayload(formData);
+      const creado = await siniestrosService.create(payload);
+
+      const archivos = Object.entries(archivosPorCategoria || {}).filter(([, file]) => file);
+      for (const [tipoDocumento, archivo] of archivos) {
+        // Se sube una por una: si alguna falla, el siniestro ya quedó creado y el resto sigue intentándose
+        await evidenciaService.upload({ siniestroId: creado.id, tipoDocumento, archivo }).catch((err) => {
+          console.error(`No se pudo subir la evidencia "${tipoDocumento}":`, err);
+        });
+      }
+
+      setSiniestroCreado(creado);
+    } catch (err) {
+      setErrorEnvio(err.message || 'No se pudo registrar el siniestro. Intentá nuevamente.');
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-slate-100 py-8 px-4 font-sans">
       <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
-        
+
         {/* Barra de Progreso Superior */}
         <div className="bg-slate-50 border-b border-slate-200 px-8 py-5">
           <div className="flex items-center justify-between mb-3">
-            {currentStep > 1 ? (
+            {stepIndex > 0 ? (
               <button type="button" onClick={prevStep} className="text-blue-600 font-semibold text-sm flex items-center gap-1 hover:underline">
                 ← Paso anterior
               </button>
             ) : <span />}
             <span className="text-sm font-bold text-slate-600 tracking-wide">
-              Paso {currentStep} de {totalSteps}
+              Paso {stepIndex + 1} de {totalSteps}
             </span>
           </div>
           <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-            <div 
+            <div
               className="bg-blue-600 h-full transition-all duration-300 ease-out rounded-full"
-              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+              style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }}
             />
           </div>
         </div>
 
         {/* Componentes Paso a Paso */}
         <div className="p-8">
-          {currentStep === 1 && <Step1contact formData={formData} setFormData={setFormData} nextStep={nextStep} />}
-          {currentStep === 2 && <Step2conductor formData={formData} setFormData={setFormData} nextStep={nextStep} prevStep={prevStep} />}
-          {currentStep === 3 && <Step3Productor formData={formData} setFormData={setFormData} nextStep={nextStep} prevStep={prevStep} />}
-          {currentStep === 4 && <Step4tercero formData={formData} setFormData={setFormData} nextStep={nextStep} prevStep={prevStep} />}
-          {currentStep === 5 && <Step5siniestro formData={formData} setFormData={setFormData} nextStep={nextStep} prevStep={prevStep} />}
-          
-          {/* Al terminar el Paso 6, ahora ejecuta iniciarVerificacion en lugar del submit final */}
-          {currentStep === 6 && <Step6detalles formData={formData} setFormData={setFormData} prevStep={prevStep} onSubmit={iniciarVerificacion} />}
+          {stepKey === 'contacto' && <Step1contact formData={formData} setFormData={setFormData} nextStep={nextStep} />}
+          {stepKey === 'conductor' && <Step2conductor formData={formData} setFormData={setFormData} nextStep={nextStep} prevStep={prevStep} />}
+          {stepKey === 'productor' && <Step3Productor formData={formData} setFormData={setFormData} nextStep={nextStep} prevStep={prevStep} />}
+          {stepKey === 'tercero' && <Step4tercero formData={formData} setFormData={setFormData} nextStep={nextStep} prevStep={prevStep} />}
+          {stepKey === 'siniestro' && <Step5siniestro formData={formData} setFormData={setFormData} nextStep={nextStep} prevStep={prevStep} />}
+          {stepKey === 'detalles' && (
+            <Step6detalles formData={formData} setFormData={setFormData} prevStep={prevStep} onSubmit={handleStep6Continue} />
+          )}
 
-          {/* NUEVO PASO 7: Verificación OTP */}
-          {currentStep === 7 && (
-            <Step7Verificacion 
+          {stepKey === 'verificacion' && (
+            <Step7Verificacion
               emailDestino={authData.emailDestino}
               codigoCorrecto={authData.codigoGenerado}
               onSuccess={handleVerificacionExitosa}
@@ -143,12 +229,14 @@ export default function Wizard() {
             />
           )}
 
-          {/* NUEVO PASO 8: RF-08 Gestión de Archivos Adjuntos */}
-          {currentStep === 8 && (
-            <Step8Adjuntos 
-              formData={formData} 
+          {stepKey === 'adjuntos' && (
+            <Step8Adjuntos
               prevStep={prevStep}
-              onSubmitFinal={handleSubmitFinal} 
+              onSubmitFinal={handleSubmitFinal}
+              enviando={enviando}
+              errorEnvio={errorEnvio}
+              siniestroCreado={siniestroCreado}
+              onFinish={onCancel}
             />
           )}
         </div>
