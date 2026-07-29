@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-lea
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { formatearFecha } from '../../utils/formatearFecha.js';
+import Spinner from '../common/Spinner.jsx';
 
 const provinciasArgentina = [
   "Buenos Aires", "Catamarca", "Chaco", "Chubut", "Ciudad Autónoma de Buenos Aires",
@@ -314,10 +315,11 @@ export default function Step5siniestro({ formData, setFormData, nextStep, prevSt
             placeholder="Ej: Av. Argentina 500, Neuquén" 
             className="flex-1 border-0 border-b-2 border-slate-300 focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 focus:outline-none" 
           />
-          <button 
+          <button
             type="button" onClick={handleBuscarDireccion} disabled={cargando}
-            className="px-5 py-1.5 bg-blue-600 text-white rounded font-medium text-sm hover:bg-blue-700 transition shadow disabled:bg-blue-400"
+            className="inline-flex items-center gap-2 px-5 py-1.5 bg-blue-600 text-white rounded font-medium text-sm hover:bg-blue-700 transition shadow disabled:bg-blue-400"
           >
+            {cargando && <Spinner size={14} />}
             {cargando ? 'Buscando...' : 'Buscar'}
           </button>
         </div>

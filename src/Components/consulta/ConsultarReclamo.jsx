@@ -2,6 +2,7 @@ import { useState } from 'react';
 import EstadoBadge from '../admin/EstadoBadge.jsx';
 import siniestrosService from '../../services/siniestros.service.js';
 import { formatearFecha, formatearFechaHora } from '../../utils/formatearFecha.js';
+import Spinner from '../common/Spinner.jsx';
 
 // TODO: completar con el email de contacto real para consultas sobre un reclamo.
 const EMAIL_CONSULTAS = '';
@@ -61,7 +62,7 @@ export default function ConsultarReclamo() {
           </div>
 
           <div>
-            <span className="block text-xs font-semibold text-slate-500 uppercase mb-1">¿Cargaste el siniestro siendo productor de seguros?</span>
+            <span className="block text-xs font-semibold text-slate-500 uppercase mb-1">¿Cargaste productor de seguros?</span>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -92,7 +93,7 @@ export default function ConsultarReclamo() {
               type="text"
               value={credencial}
               onChange={(e) => setCredencial(e.target.value)}
-              placeholder={tieneProductor ? 'Ingrese acá la matrícula' : 'Ej: 30123456'}
+              placeholder={tieneProductor ? 'Ej: PROD-1234' : 'Ej: 30123456'}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -102,8 +103,9 @@ export default function ConsultarReclamo() {
           <button
             type="submit"
             disabled={buscando}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg shadow transition-colors"
+            className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg shadow transition-colors"
           >
+            {buscando && <Spinner size={16} />}
             {buscando ? 'Buscando...' : 'Consultar'}
           </button>
         </form>

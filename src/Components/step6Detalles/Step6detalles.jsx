@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Spinner from '../common/Spinner.jsx';
 
 export default function Step6detalles({ formData, setFormData, prevStep, onSubmit, enviando }) {
   const [error, setError] = useState("");
@@ -53,8 +54,9 @@ export default function Step6detalles({ formData, setFormData, prevStep, onSubmi
         <button
           type="submit"
           disabled={enviando}
-          className="bg-emerald-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-700 disabled:opacity-60 transition shadow-lg"
+          className="inline-flex items-center gap-2 bg-emerald-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-700 disabled:opacity-60 transition shadow-lg"
         >
+          {enviando && <Spinner size={16} />}
           {enviando ? 'Enviando código...' : 'Siguiente'}
         </button>
       </div>

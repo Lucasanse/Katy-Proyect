@@ -6,6 +6,7 @@ import Wizard from '../wizard/Wizard.jsx';
 import siniestrosService from '../../services/siniestros.service.js';
 import { formatearFecha } from '../../utils/formatearFecha.js';
 import authService from '../../services/auth.service.js';
+import Spinner from '../common/Spinner.jsx';
 
 const TABS = [
   { id: 'siniestros', label: 'Siniestros' },
@@ -186,7 +187,9 @@ function SiniestrosTab() {
               {loading ? (
                 <tr>
                   <td colSpan={6} className="text-center text-slate-500 px-4 py-8">
-                    Cargando...
+                    <span className="inline-flex items-center gap-2">
+                      <Spinner size={16} /> Cargando...
+                    </span>
                   </td>
                 </tr>
               ) : siniestros.length === 0 ? (

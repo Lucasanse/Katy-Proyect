@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Spinner from '../common/Spinner.jsx';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 const ALLOWED_EXTENSIONS_LABEL = 'JPG, JPEG, PNG o PDF';
@@ -66,7 +67,7 @@ function FilePreview({ archivo, onRemove }) {
   );
 }
 
-export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmitFinal, enviando, errorEnvio, siniestroCreado, onFinish }) {
+export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmitFinal, enviando, errorEnvio, siniestroCreado, onFinish, esAdmin = false }) {
   const [archivos, setArchivos] = useState({});
   const [erroresPorCategoria, setErroresPorCategoria] = useState({});
   const [errorFaltantes, setErrorFaltantes] = useState('');
@@ -160,20 +161,36 @@ export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmi
     return (
       <div className="bg-white p-8 rounded-lg text-center">
         <div className="text-5xl mb-4">✅</div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Reclamo registrado con éxito!</h2>
-        <p className="text-gray-600 mb-2">
-          Tu siniestro quedó cargado con el número <strong>{siniestroCreado.numero}</strong>. Nos pondremos en contacto a la brevedad.
-        </p>
-        <p className="text-gray-600 mb-6">
-          Te vamos a enviar un email con la confirmación y el número de siniestro para que lo tengas a mano.
-        </p>
+        {esAdmin ? (
+          <>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Siniestro cargado correctamente</h2>
+            <p className="text-gray-600 mb-4">
+              Quedó registrado con el número <strong>{siniestroCreado.numero}</strong>.
+            </p>
+            <p className="text-sm text-amber-900 bg-amber-50 border-l-4 border-amber-500 rounded-r-md px-4 py-3 mb-6 text-left">
+              ℹ️ Como la carga se hizo desde el panel de administración, <strong>no se envió ningún email</strong> al
+              productor de seguros ni al titular. Si querés que reciban el número de siniestro, hay que avisarles por
+              fuera del sistema.
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Reclamo registrado con éxito!</h2>
+            <p className="text-gray-600 mb-2">
+              Tu siniestro quedó cargado con el número <strong>{siniestroCreado.numero}</strong>. Nos pondremos en contacto a la brevedad.
+            </p>
+            <p className="text-gray-600 mb-6">
+              Te vamos a enviar un email con la confirmación y el número de siniestro para que lo tengas a mano.
+            </p>
+          </>
+        )}
         {onFinish && (
           <button
             type="button"
             onClick={onFinish}
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-lg shadow transition-colors"
           >
-            Volver al inicio
+            {esAdmin ? 'Volver al panel' : 'Volver al inicio'}
           </button>
         )}
       </div>
@@ -304,8 +321,9 @@ export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmi
           <button
             type="submit"
             disabled={enviando}
-            className="bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-medium px-6 py-2.5 rounded-lg shadow transition-colors"
+            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-medium px-6 py-2.5 rounded-lg shadow transition-colors"
           >
+            {enviando && <Spinner size={16} />}
             {enviando ? 'Enviando...' : 'Confirmar y Enviar Siniestro'}
           </button>
         </div>

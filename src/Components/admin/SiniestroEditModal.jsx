@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import siniestrosService from '../../services/siniestros.service.js';
 import aseguradorasService from '../../services/aseguradoras.service.js';
+import Spinner from '../common/Spinner.jsx';
 
 const PROVINCIAS = [
   'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Ciudad Autónoma de Buenos Aires',
@@ -329,8 +330,9 @@ export default function SiniestroEditModal({ siniestro, onClose, onSaved }) {
             <button
               type="submit"
               disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-6 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-6 py-2 rounded-lg transition-colors"
             >
+              {saving && <Spinner size={14} />}
               {saving ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>

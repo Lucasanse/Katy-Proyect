@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import aseguradorasService from '../../services/aseguradoras.service.js';
 import AseguradoraFormModal from './AseguradoraFormModal.jsx';
+import Spinner from '../common/Spinner.jsx';
 
 export default function AseguradorasPanel() {
   const [aseguradoras, setAseguradoras] = useState([]);
@@ -51,7 +52,7 @@ export default function AseguradorasPanel() {
   }
 
   function handleDeleted(id) {
-    setAseguradoras((prev) => prev.map((a) => (a.id === id ? { ...a, activo: false } : a)));
+    setAseguradoras((prev) => prev.filter((a) => a.id !== id));
     setSelected(null);
   }
 
@@ -104,7 +105,9 @@ export default function AseguradorasPanel() {
               {loading ? (
                 <tr>
                   <td colSpan={5} className="text-center text-slate-500 px-4 py-8">
-                    Cargando...
+                    <span className="inline-flex items-center gap-2">
+                      <Spinner size={16} /> Cargando...
+                    </span>
                   </td>
                 </tr>
               ) : ordenadas.length === 0 ? (

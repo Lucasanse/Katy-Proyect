@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import tercerosService from '../../services/terceros.service.js';
+import Spinner from '../common/Spinner.jsx';
 
 const inputClass = 'w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
 const labelClass = 'block text-[11px] font-medium text-slate-500 uppercase mb-1';
@@ -82,8 +83,9 @@ export default function TerceroEditForm({ tercero, aseguradoras, onSaved, onCanc
         <button
           type="submit"
           disabled={saving}
-          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded transition-colors"
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded transition-colors"
         >
+          {saving && <Spinner size={12} />}
           {saving ? 'Guardando...' : 'Guardar'}
         </button>
       </div>

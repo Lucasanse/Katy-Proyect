@@ -6,6 +6,8 @@ import siniestrosService from '../../services/siniestros.service.js';
 import aseguradorasService from '../../services/aseguradoras.service.js';
 import { descargarSiniestroZip } from '../../utils/descargarSiniestroZip.js';
 import { formatearFecha, formatearFechaHora } from '../../utils/formatearFecha.js';
+import Spinner from '../common/Spinner.jsx';
+import ConfirmDialog from '../common/ConfirmDialog.jsx';
 
 function Field({ label, value }) {
   return (
@@ -42,6 +44,7 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
   const [previewUrl, setPreviewUrl] = useState(null);
   const [editando, setEditando] = useState(false);
   const [borrando, setBorrando] = useState(false);
+  const [confirmandoBorrado, setConfirmandoBorrado] = useState(false);
   const [descargando, setDescargando] = useState(false);
   const [terceroEditandoId, setTerceroEditandoId] = useState(null);
   const [aseguradoras, setAseguradoras] = useState([]);
@@ -100,9 +103,6 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
   }
 
   async function handleBorrar() {
-    if (!window.confirm(`¿Borrar el siniestro ${siniestro.numero || `#${siniestro.id}`}? Esta acción no se puede deshacer y también borra sus imágenes de Cloudinary.`)) {
-      return;
-    }
     setError('');
     setBorrando(true);
     try {
@@ -111,6 +111,7 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
     } catch (err) {
       setError(err.message || 'No se pudo borrar el siniestro');
       setBorrando(false);
+      setConfirmandoBorrado(false);
     }
   }
 
@@ -130,8 +131,9 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
               type="button"
               onClick={handleDescargar}
               disabled={descargando}
-              className="text-sm font-medium text-slate-600 hover:text-slate-800 border border-slate-300 hover:bg-slate-50 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-800 border border-slate-300 hover:bg-slate-50 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors"
             >
+              {descargando && <Spinner size={14} />}
               {descargando ? 'Generando ZIP...' : 'Descargar siniestro'}
             </button>
             <button
@@ -143,10 +145,11 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
             </button>
             <button
               type="button"
-              onClick={handleBorrar}
+              onClick={() => setConfirmandoBorrado(true)}
               disabled={borrando}
-              className="text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 hover:bg-red-50 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 hover:bg-red-50 disabled:opacity-50 rounded-lg px-3 py-1.5 transition-colors"
             >
+              {borrando && <Spinner size={14} />}
               {borrando ? 'Borrando...' : 'Borrar siniestro'}
             </button>
             <button
@@ -163,6 +166,7 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
           <div className="flex items-center gap-3 flex-wrap">
             <span className="text-sm font-medium text-slate-700">Estado:</span>
             <EstadoBadge estado={estado} />
+            {updating && <Spinner size={14} className="text-slate-400" />}
             <select
               value={estado}
               onChange={handleEstadoChange}
@@ -343,7 +347,9 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
               Historial de ediciones {auditoria.length ? `(${auditoria.length})` : ''}
             </h3>
             {cargandoAuditoria ? (
-              <p className="text-sm text-slate-500">Cargando historial...</p>
+              <p className="text-sm text-slate-500 inline-flex items-center gap-2">
+                <Spinner size={14} /> Cargando historial...
+              </p>
             ) : auditoria.length ? (
               <ul className="space-y-2">
                 {auditoria.map((registro) => (
@@ -385,6 +391,17 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
       {editando && (
         <SiniestroEditModal siniestro={siniestro} onClose={() => setEditando(false)} onSaved={handleEditado} />
       )}
+
+      <ConfirmDialog
+        open={confirmandoBorrado}
+        title="Borrar siniestro"
+        message={`¿Borrar el siniestro ${siniestro.numero || `#${siniestro.id}`}? Esta acción no se puede deshacer y también borra sus imágenes de Cloudinary.`}
+        confirmLabel="Borrar"
+        danger
+        loading={borrando}
+        onCancel={() => setConfirmandoBorrado(false)}
+        onConfirm={handleBorrar}
+      />
     </div>
   );
 }

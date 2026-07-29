@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import authService from '../../services/auth.service.js';
+import Spinner from '../common/Spinner.jsx';
 
 export default function AdminLogin({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -67,8 +68,9 @@ export default function AdminLogin({ onLoginSuccess }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition-colors"
+            className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition-colors"
           >
+            {loading && <Spinner size={16} />}
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
         </form>

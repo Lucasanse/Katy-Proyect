@@ -3,6 +3,7 @@ import AdminLogin from './AdminLogin.jsx';
 import AdminPanel from './AdminPanel.jsx';
 import authService from '../../services/auth.service.js';
 import { getToken, setToken } from '../../services/api.js';
+import Spinner from '../common/Spinner.jsx';
 
 export default function AdminApp() {
   const [admin, setAdmin] = useState(null);
@@ -29,7 +30,9 @@ export default function AdminApp() {
   if (checkingSession) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-slate-500">Cargando...</p>
+        <p className="text-slate-500 inline-flex items-center gap-2">
+          <Spinner size={16} /> Cargando...
+        </p>
       </div>
     );
   }

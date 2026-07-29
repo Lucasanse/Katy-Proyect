@@ -12,12 +12,14 @@ import siniestrosService from '../../services/siniestros.service.js';
 import evidenciaService from '../../services/evidencia.service.js';
 import verificacionService from '../../services/verificacion.service.js';
 
-function buildSiniestroPayload(formData) {
+function buildSiniestroPayload(formData, skipVerification) {
   const payload = {
     fechaSiniestro: formData.fechaSiniestro,
     horaSiniestro: formData.horaSiniestro,
     huboHeridos: Boolean(formData.huboHeridos),
     tieneLicencia: formData.tieneLicencia !== false,
+    // Flujo admin (skipVerification): no tiene sentido mandarle el mail de confirmación a nadie
+    omitirNotificacion: skipVerification === true,
     lugarCalle: formData.lugarCalle,
     lugarLocalidad: formData.lugarLocalidad,
     lugarProvincia: formData.lugarProvincia,
@@ -185,7 +187,7 @@ export default function Wizard({ skipVerification = false, onCancel }) {
     setEnviando(true);
     setErrorEnvio('');
     try {
-      const payload = buildSiniestroPayload(formData);
+      const payload = buildSiniestroPayload(formData, skipVerification);
       const creado = await siniestrosService.create(payload);
 
       // Categorías como "daños" mandan un array de archivos; el resto manda un único File
@@ -264,6 +266,7 @@ export default function Wizard({ skipVerification = false, onCancel }) {
             <Step8Adjuntos
               formData={formData}
               setFormData={setFormData}
+              esAdmin={skipVerification}
               prevStep={prevStep}
               onSubmitFinal={handleSubmitFinal}
               enviando={enviando}

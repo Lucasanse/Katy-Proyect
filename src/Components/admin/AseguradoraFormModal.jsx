@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import aseguradorasService from '../../services/aseguradoras.service.js';
+import Spinner from '../common/Spinner.jsx';
+import ConfirmDialog from '../common/ConfirmDialog.jsx';
 
 const EMPTY_FORM = { nombre: '', cuit: '', email: '', sitioWeb: '' };
 const CUIT_REGEX = /^\d{11}$/;
@@ -19,6 +21,7 @@ export default function AseguradoraFormModal({ aseguradora, onClose, onSaved, on
   );
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmandoBorrado, setConfirmandoBorrado] = useState(false);
   const [error, setError] = useState('');
 
   function handleChange(e) {
@@ -57,18 +60,15 @@ export default function AseguradoraFormModal({ aseguradora, onClose, onSaved, on
   }
 
   async function handleDelete() {
-    if (!window.confirm(`¿Dar de baja "${aseguradora.nombre}"? Podrás reactivarla más adelante desde este mismo formulario.`)) {
-      return;
-    }
     setError('');
     setDeleting(true);
     try {
       await aseguradorasService.remove(aseguradora.id);
       onDeleted(aseguradora.id);
     } catch (err) {
-      setError(err.message || 'No se pudo dar de baja la aseguradora');
-    } finally {
+      setError(err.message || 'No se pudo eliminar la aseguradora');
       setDeleting(false);
+      setConfirmandoBorrado(false);
     }
   }
 
@@ -155,11 +155,12 @@ export default function AseguradoraFormModal({ aseguradora, onClose, onSaved, on
             {isEdit ? (
               <button
                 type="button"
-                onClick={handleDelete}
+                onClick={() => setConfirmandoBorrado(true)}
                 disabled={deleting || saving}
-                className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
+                className="inline-flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
               >
-                {deleting ? 'Dando de baja...' : 'Dar de baja'}
+                {deleting && <Spinner size={14} />}
+                {deleting ? 'Eliminando...' : 'Eliminar aseguradora'}
               </button>
             ) : (
               <span />
@@ -167,13 +168,27 @@ export default function AseguradoraFormModal({ aseguradora, onClose, onSaved, on
             <button
               type="submit"
               disabled={saving || deleting}
-              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-6 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-6 py-2 rounded-lg transition-colors"
             >
+              {saving && <Spinner size={14} />}
               {saving ? 'Guardando...' : 'Guardar'}
             </button>
           </div>
         </form>
       </div>
+
+      {isEdit && (
+        <ConfirmDialog
+          open={confirmandoBorrado}
+          title="Eliminar aseguradora"
+          message={`¿Eliminar "${aseguradora.nombre}"? Esta acción no se puede deshacer. Si hay siniestros que la usan, no se va a poder eliminar y vas a poder desactivarla en su lugar con el switch de arriba.`}
+          confirmLabel="Eliminar"
+          danger
+          loading={deleting}
+          onCancel={() => setConfirmandoBorrado(false)}
+          onConfirm={handleDelete}
+        />
+      )}
     </div>
   );
 }
