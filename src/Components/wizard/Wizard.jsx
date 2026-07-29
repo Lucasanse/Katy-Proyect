@@ -17,6 +17,7 @@ function buildSiniestroPayload(formData) {
     fechaSiniestro: formData.fechaSiniestro,
     horaSiniestro: formData.horaSiniestro,
     huboHeridos: Boolean(formData.huboHeridos),
+    tieneLicencia: formData.tieneLicencia !== false,
     lugarCalle: formData.lugarCalle,
     lugarLocalidad: formData.lugarLocalidad,
     lugarProvincia: formData.lugarProvincia,
@@ -32,6 +33,11 @@ function buildSiniestroPayload(formData) {
       aseguradoraId: Number(formData.titularSeguro),
     },
   };
+
+  if (payload.huboHeridos) {
+    payload.intervencionPolicial = Boolean(formData.intervencionPolicial);
+    payload.intervencionAmbulancia = Boolean(formData.intervencionAmbulancia);
+  }
 
   if (typeof formData.latitud === 'number' && typeof formData.longitud === 'number') {
     payload.latitud = formData.latitud;
@@ -101,10 +107,14 @@ export default function Wizard({ skipVerification = false, onCancel }) {
 
     // Siniestro + mapa
     fechaSiniestro: '', horaSiniestro: '', huboHeridos: false,
+    intervencionPolicial: null, intervencionAmbulancia: null,
     lugarCalle: '', lugarLocalidad: '', lugarProvincia: '', latitud: null, longitud: null,
 
     // Detalles
     detallesAccidente: '',
+
+    // Adjuntos
+    tieneLicencia: true,
   });
 
   const [authData, setAuthData] = useState({ emailDestino: '', verificado: false });
@@ -252,6 +262,8 @@ export default function Wizard({ skipVerification = false, onCancel }) {
 
           {stepKey === 'adjuntos' && (
             <Step8Adjuntos
+              formData={formData}
+              setFormData={setFormData}
               prevStep={prevStep}
               onSubmitFinal={handleSubmitFinal}
               enviando={enviando}

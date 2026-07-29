@@ -19,6 +19,9 @@ export default function SiniestroEditModal({ siniestro, onClose, onSaved }) {
     fechaSiniestro: siniestro.fechaSiniestro || '',
     horaSiniestro: siniestro.horaSiniestro || '',
     huboHeridos: Boolean(siniestro.huboHeridos),
+    intervencionPolicial: Boolean(siniestro.intervencionPolicial),
+    intervencionAmbulancia: Boolean(siniestro.intervencionAmbulancia),
+    tieneLicencia: siniestro.tieneLicencia !== false,
     lugarCalle: siniestro.lugarCalle || '',
     lugarLocalidad: siniestro.lugarLocalidad || '',
     lugarProvincia: siniestro.lugarProvincia || '',
@@ -33,6 +36,11 @@ export default function SiniestroEditModal({ siniestro, onClose, onSaved }) {
     titularTelefono: siniestro.titular?.telefono || '',
     titularEmail: siniestro.titular?.email || '',
     titularAseguradoraId: siniestro.titular?.aseguradora?.id || '',
+    conductorNombreCompleto: siniestro.conductor?.nombreCompleto || '',
+    conductorDocumento: siniestro.conductor?.documento || '',
+    conductorTelefono: siniestro.conductor?.telefono || '',
+    conductorEmail: siniestro.conductor?.email || '',
+    conductorVinculo: siniestro.conductor?.vinculo || '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -55,6 +63,7 @@ export default function SiniestroEditModal({ siniestro, onClose, onSaved }) {
         fechaSiniestro: form.fechaSiniestro,
         horaSiniestro: form.horaSiniestro,
         huboHeridos: form.huboHeridos,
+        tieneLicencia: form.tieneLicencia,
         lugarCalle: form.lugarCalle,
         lugarLocalidad: form.lugarLocalidad,
         lugarProvincia: form.lugarProvincia,
@@ -62,6 +71,11 @@ export default function SiniestroEditModal({ siniestro, onClose, onSaved }) {
         longitud: form.longitud === '' ? null : Number(form.longitud),
         detallesAccidente: form.detallesAccidente,
       };
+
+      if (form.huboHeridos) {
+        payload.intervencionPolicial = form.intervencionPolicial;
+        payload.intervencionAmbulancia = form.intervencionAmbulancia;
+      }
 
       if (siniestro.titular) {
         payload.titular = {
@@ -73,6 +87,16 @@ export default function SiniestroEditModal({ siniestro, onClose, onSaved }) {
           telefono: form.titularTelefono,
           email: form.titularEmail,
           aseguradoraId: Number(form.titularAseguradoraId),
+        };
+      }
+
+      if (siniestro.conductor) {
+        payload.conductor = {
+          nombreCompleto: form.conductorNombreCompleto,
+          documento: form.conductorDocumento,
+          telefono: form.conductorTelefono || undefined,
+          email: form.conductorEmail || undefined,
+          vinculo: form.conductorVinculo || undefined,
         };
       }
 
@@ -92,7 +116,7 @@ export default function SiniestroEditModal({ siniestro, onClose, onSaved }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 sticky top-0 bg-white rounded-t-xl">
-          <h2 className="text-lg font-bold text-slate-900">Modificar siniestro #{siniestro.id}</h2>
+          <h2 className="text-lg font-bold text-slate-900">Modificar siniestro {siniestro.numero || `#${siniestro.id}`}</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none px-2" aria-label="Cerrar">
             &times;
           </button>
@@ -123,6 +147,60 @@ export default function SiniestroEditModal({ siniestro, onClose, onSaved }) {
                   <span
                     className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
                       form.huboHeridos ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {form.huboHeridos && (
+                <>
+                  <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                    <span className="text-sm font-medium text-slate-700">¿Intervención policial?</span>
+                    <button
+                      type="button"
+                      onClick={() => setForm((p) => ({ ...p, intervencionPolicial: !p.intervencionPolicial }))}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        form.intervencionPolicial ? 'bg-blue-600' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
+                          form.intervencionPolicial ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                    <span className="text-sm font-medium text-slate-700">¿Intervención de ambulancia?</span>
+                    <button
+                      type="button"
+                      onClick={() => setForm((p) => ({ ...p, intervencionAmbulancia: !p.intervencionAmbulancia }))}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        form.intervencionAmbulancia ? 'bg-blue-600' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
+                          form.intervencionAmbulancia ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </>
+              )}
+
+              <div className="sm:col-span-2 flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <span className="text-sm font-medium text-slate-700">¿El conductor cuenta con licencia?</span>
+                <button
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, tieneLicencia: !p.tieneLicencia }))}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    form.tieneLicencia ? 'bg-blue-600' : 'bg-slate-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
+                      form.tieneLicencia ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   />
                 </button>
@@ -209,6 +287,34 @@ export default function SiniestroEditModal({ siniestro, onClose, onSaved }) {
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {siniestro.conductor && (
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 mb-3">Conductor</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Nombre completo</label>
+                  <input type="text" name="conductorNombreCompleto" value={form.conductorNombreCompleto} onChange={handleChange} required className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Documento</label>
+                  <input type="text" name="conductorDocumento" value={form.conductorDocumento} onChange={handleChange} required className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Teléfono</label>
+                  <input type="text" name="conductorTelefono" value={form.conductorTelefono} onChange={handleChange} className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Email</label>
+                  <input type="email" name="conductorEmail" value={form.conductorEmail} onChange={handleChange} className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Vínculo con el titular</label>
+                  <input type="text" name="conductorVinculo" value={form.conductorVinculo} onChange={handleChange} className={inputClass} />
                 </div>
               </div>
             </div>

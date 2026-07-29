@@ -179,6 +179,14 @@ export default function Step5siniestro({ formData, setFormData, nextStep, prevSt
       if (error) newErrors[field] = error;
     });
 
+    if (formData?.huboHeridos === true) {
+      const faltaPolicial = typeof formData?.intervencionPolicial !== 'boolean';
+      const faltaAmbulancia = typeof formData?.intervencionAmbulancia !== 'boolean';
+      if (faltaPolicial || faltaAmbulancia) {
+        newErrors.intervenciones = 'Indicá si hubo intervención policial y de ambulancia';
+      }
+    }
+
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
@@ -222,15 +230,75 @@ export default function Step5siniestro({ formData, setFormData, nextStep, prevSt
           <span className="font-semibold text-slate-700">¿Hubo heridos en el accidente?</span>
           <div className="flex space-x-6">
             <label className="flex items-center space-x-2 cursor-pointer">
-              <input type="radio" name="huboHeridos" checked={formData?.huboHeridos === true} onChange={() => setFormData({...formData, huboHeridos: true})} className="w-5 h-5 text-blue-600 focus:ring-0" />
+              <input
+                type="radio" name="huboHeridos" checked={formData?.huboHeridos === true}
+                onChange={() => setFormData({ ...formData, huboHeridos: true })}
+                className="w-5 h-5 text-blue-600 focus:ring-0"
+              />
               <span className="font-medium text-slate-700">SÍ</span>
             </label>
             <label className="flex items-center space-x-2 cursor-pointer">
-              <input type="radio" name="huboHeridos" checked={formData?.huboHeridos === false} onChange={() => setFormData({...formData, huboHeridos: false})} className="w-5 h-5 text-blue-600 focus:ring-0" />
+              <input
+                type="radio" name="huboHeridos" checked={formData?.huboHeridos === false}
+                onChange={() => setFormData({ ...formData, huboHeridos: false, intervencionPolicial: null, intervencionAmbulancia: null })}
+                className="w-5 h-5 text-blue-600 focus:ring-0"
+              />
               <span className="font-medium text-slate-700">NO</span>
             </label>
           </div>
         </div>
+
+        {formData?.huboHeridos === true && (
+          <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-amber-50 p-4 rounded-lg border border-amber-200 animate-fadeIn">
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-slate-700 text-sm">¿Hubo intervención policial?</span>
+              <div className="flex space-x-4">
+                <label className="flex items-center space-x-1.5 cursor-pointer">
+                  <input
+                    type="radio" name="intervencionPolicial" checked={formData?.intervencionPolicial === true}
+                    onChange={() => setFormData({ ...formData, intervencionPolicial: true })}
+                    className="w-4 h-4 text-blue-600 focus:ring-0"
+                  />
+                  <span className="text-sm text-slate-700">SÍ</span>
+                </label>
+                <label className="flex items-center space-x-1.5 cursor-pointer">
+                  <input
+                    type="radio" name="intervencionPolicial" checked={formData?.intervencionPolicial === false}
+                    onChange={() => setFormData({ ...formData, intervencionPolicial: false })}
+                    className="w-4 h-4 text-blue-600 focus:ring-0"
+                  />
+                  <span className="text-sm text-slate-700">NO</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-slate-700 text-sm">¿Hubo intervención de ambulancia?</span>
+              <div className="flex space-x-4">
+                <label className="flex items-center space-x-1.5 cursor-pointer">
+                  <input
+                    type="radio" name="intervencionAmbulancia" checked={formData?.intervencionAmbulancia === true}
+                    onChange={() => setFormData({ ...formData, intervencionAmbulancia: true })}
+                    className="w-4 h-4 text-blue-600 focus:ring-0"
+                  />
+                  <span className="text-sm text-slate-700">SÍ</span>
+                </label>
+                <label className="flex items-center space-x-1.5 cursor-pointer">
+                  <input
+                    type="radio" name="intervencionAmbulancia" checked={formData?.intervencionAmbulancia === false}
+                    onChange={() => setFormData({ ...formData, intervencionAmbulancia: false })}
+                    className="w-4 h-4 text-blue-600 focus:ring-0"
+                  />
+                  <span className="text-sm text-slate-700">NO</span>
+                </label>
+              </div>
+            </div>
+
+            {errors.intervenciones && (
+              <span className="sm:col-span-2 text-xs text-red-600 font-medium">{errors.intervenciones}</span>
+            )}
+          </div>
+        )}
       </div>
 
       <hr className="border-slate-200" />

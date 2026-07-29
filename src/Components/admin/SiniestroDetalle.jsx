@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import EstadoBadge, { ESTADO_LABELS } from './EstadoBadge.jsx';
 import SiniestroEditModal from './SiniestroEditModal.jsx';
+import TerceroEditForm from './TerceroEditForm.jsx';
 import siniestrosService from '../../services/siniestros.service.js';
+import aseguradorasService from '../../services/aseguradoras.service.js';
 import { descargarSiniestroZip } from '../../utils/descargarSiniestroZip.js';
-import { formatearFecha } from '../../utils/formatearFecha.js';
+import { formatearFecha, formatearFechaHora } from '../../utils/formatearFecha.js';
 
 function Field({ label, value }) {
   return (
@@ -41,6 +43,23 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
   const [editando, setEditando] = useState(false);
   const [borrando, setBorrando] = useState(false);
   const [descargando, setDescargando] = useState(false);
+  const [terceroEditandoId, setTerceroEditandoId] = useState(null);
+  const [aseguradoras, setAseguradoras] = useState([]);
+  const [auditoria, setAuditoria] = useState([]);
+  const [cargandoAuditoria, setCargandoAuditoria] = useState(true);
+
+  useEffect(() => {
+    aseguradorasService.list({ incluirInactivas: true }).then(setAseguradoras).catch(() => setAseguradoras([]));
+  }, []);
+
+  useEffect(() => {
+    setCargandoAuditoria(true);
+    siniestrosService
+      .auditoria(siniestro.id)
+      .then(setAuditoria)
+      .catch(() => setAuditoria([]))
+      .finally(() => setCargandoAuditoria(false));
+  }, [siniestro.id]);
 
   async function handleEstadoChange(e) {
     const nuevoEstado = e.target.value;
@@ -81,7 +100,7 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
   }
 
   async function handleBorrar() {
-    if (!window.confirm(`¿Borrar el siniestro #${siniestro.id}? Esta acción no se puede deshacer y también borra sus imágenes de Cloudinary.`)) {
+    if (!window.confirm(`¿Borrar el siniestro ${siniestro.numero || `#${siniestro.id}`}? Esta acción no se puede deshacer y también borra sus imágenes de Cloudinary.`)) {
       return;
     }
     setError('');
@@ -103,7 +122,7 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 sticky top-0 bg-white rounded-t-xl gap-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Siniestro #{siniestro.id}</h2>
+            <h2 className="text-lg font-bold text-slate-900">Siniestro {siniestro.numero || `#${siniestro.id}`}</h2>
             <p className="text-sm text-slate-500">{formatearFecha(siniestro.fechaSiniestro)} · {siniestro.horaSiniestro}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -165,6 +184,13 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
             <Field label="Fecha" value={formatearFecha(siniestro.fechaSiniestro)} />
             <Field label="Hora" value={siniestro.horaSiniestro} />
             <Field label="¿Hubo heridos?" value={siniestro.huboHeridos ? 'Sí' : 'No'} />
+            {siniestro.huboHeridos && (
+              <>
+                <Field label="¿Intervención policial?" value={siniestro.intervencionPolicial ? 'Sí' : 'No'} />
+                <Field label="¿Intervención de ambulancia?" value={siniestro.intervencionAmbulancia ? 'Sí' : 'No'} />
+              </>
+            )}
+            <Field label="¿El conductor cuenta con licencia?" value={siniestro.tieneLicencia === false ? 'No' : 'Sí'} />
             <Field label="Calle" value={siniestro.lugarCalle} />
             <Field label="Localidad" value={siniestro.lugarLocalidad} />
             <Field label="Provincia" value={siniestro.lugarProvincia} />
@@ -230,14 +256,37 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
             <div className="border border-slate-200 rounded-lg p-4">
               <h3 className="text-sm font-semibold text-slate-900 mb-3">Terceros involucrados</h3>
               <div className="space-y-3">
-                {siniestro.terceros.map((tercero) => (
-                  <dl key={tercero.id} className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-100 pt-3 first:border-t-0 first:pt-0">
-                    <Field label="Nombre" value={`${tercero.nombre || ''} ${tercero.apellido || ''}`.trim()} />
-                    <Field label="DNI" value={tercero.dni} />
-                    <Field label="Patente" value={tercero.patente} />
-                    <Field label="Aseguradora" value={tercero.aseguradora?.nombre} />
-                  </dl>
-                ))}
+                {siniestro.terceros.map((tercero) =>
+                  terceroEditandoId === tercero.id ? (
+                    <TerceroEditForm
+                      key={tercero.id}
+                      tercero={tercero}
+                      aseguradoras={aseguradoras}
+                      onCancel={() => setTerceroEditandoId(null)}
+                      onSaved={(actualizado) => {
+                        setSiniestro((prev) => ({
+                          ...prev,
+                          terceros: prev.terceros.map((t) => (t.id === actualizado.id ? actualizado : t)),
+                        }));
+                        setTerceroEditandoId(null);
+                      }}
+                    />
+                  ) : (
+                    <dl key={tercero.id} className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-100 pt-3 first:border-t-0 first:pt-0 relative">
+                      <Field label="Nombre" value={`${tercero.nombre || ''} ${tercero.apellido || ''}`.trim()} />
+                      <Field label="DNI" value={tercero.dni} />
+                      <Field label="Patente" value={tercero.patente} />
+                      <Field label="Aseguradora" value={tercero.aseguradora?.nombre} />
+                      <button
+                        type="button"
+                        onClick={() => setTerceroEditandoId(tercero.id)}
+                        className="sm:col-span-2 justify-self-end text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                      >
+                        Editar tercero
+                      </button>
+                    </dl>
+                  ),
+                )}
               </div>
             </div>
           ) : (
@@ -286,6 +335,36 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
               </div>
             ) : (
               <p className="text-sm text-slate-500">No se cargó evidencia para este siniestro.</p>
+            )}
+          </div>
+
+          <div className="border border-slate-200 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-slate-900 mb-3">
+              Historial de ediciones {auditoria.length ? `(${auditoria.length})` : ''}
+            </h3>
+            {cargandoAuditoria ? (
+              <p className="text-sm text-slate-500">Cargando historial...</p>
+            ) : auditoria.length ? (
+              <ul className="space-y-2">
+                {auditoria.map((registro) => (
+                  <li key={registro.id} className="text-sm border-t border-slate-100 pt-2 first:border-t-0 first:pt-0">
+                    <span className="font-medium text-slate-700 capitalize">{registro.entidad}</span>{' '}
+                    <span className="text-slate-500">
+                      editado por <strong>{registro.adminEmail}</strong> el{' '}
+                      {formatearFechaHora(registro.createdAt)}
+                    </span>
+                    <ul className="list-disc list-inside text-xs text-slate-500 mt-1">
+                      {Object.entries(registro.cambios || {}).map(([campo, { anterior, nuevo }]) => (
+                        <li key={campo}>
+                          <span className="font-medium">{campo}</span>: {String(anterior ?? '—')} → {String(nuevo ?? '—')}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-slate-500">Todavía no se registraron ediciones de un administrador sobre este siniestro.</p>
             )}
           </div>
         </div>

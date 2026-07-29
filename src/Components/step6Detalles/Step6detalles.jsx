@@ -55,7 +55,7 @@ export default function Step6detalles({ formData, setFormData, prevStep, onSubmi
           disabled={enviando}
           className="bg-emerald-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-700 disabled:opacity-60 transition shadow-lg"
         >
-          {enviando ? 'Enviando código...' : 'Confirmar y Enviar Reclamo'}
+          {enviando ? 'Enviando código...' : 'Siguiente'}
         </button>
       </div>
     </form>

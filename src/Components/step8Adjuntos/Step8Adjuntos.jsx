@@ -5,18 +5,22 @@ const ALLOWED_EXTENSIONS_LABEL = 'JPG, JPEG, PNG o PDF';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPT_ATTR = '.jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf';
 
-const categoriasDocumentacion = [
-  { id: 'patente', label: 'Fotos de patente', req: true },
-  { id: 'danios', label: 'Fotos de daños en detalle', multiple: true, maxFiles: 6, req: true },
-  { id: 'dni_frente', label: 'DNI - Frente', req: true },
-  { id: 'dni_dorso', label: 'DNI - Dorso', req: true },
-  { id: 'licencia_frente', label: 'Licencia de Conducir - Frente', req: true },
-  { id: 'licencia_dorso', label: 'Licencia de Conducir - Dorso', req: true },
-  { id: 'cedula', label: 'Cédula Verde / Azul', req: true },
-  { id: 'denuncia', label: 'Denuncia administrativa previa', req: false },
-  { id: 'cobertura', label: 'Certificado de cobertura', req: false },
-  { id: 'presupuesto', label: 'Presupuesto de reparación', req: false },
-];
+// La documentación de licencia depende de si el conductor cuenta con ella (ver checkbox arriba del listado)
+function getCategoriasDocumentacion(tieneLicencia) {
+  return [
+    { id: 'patente', label: 'Fotos de patente', req: true },
+    { id: 'danios', label: 'Fotos de daños en detalle', multiple: true, minFiles: 4, maxFiles: 8, req: true },
+    { id: 'dni_frente', label: 'DNI - Frente', req: true },
+    { id: 'dni_dorso', label: 'DNI - Dorso', req: true },
+    { id: 'licencia_frente', label: 'Licencia de Conducir - Frente', req: tieneLicencia, disabled: !tieneLicencia },
+    { id: 'licencia_dorso', label: 'Licencia de Conducir - Dorso', req: tieneLicencia, disabled: !tieneLicencia },
+    { id: 'cedula_frente', label: 'Cédula Verde/Azul - Frente', req: true },
+    { id: 'cedula_dorso', label: 'Cédula Verde/Azul - Dorso', req: true },
+    { id: 'denuncia', label: 'Denuncia administrativa previa', multiple: true, minFiles: 0, maxFiles: 4, req: false },
+    { id: 'cobertura', label: 'Certificado de cobertura', req: false },
+    { id: 'presupuesto', label: 'Presupuesto de reparación', multiple: true, minFiles: 0, maxFiles: 4, req: false },
+  ];
+}
 
 function validarArchivo(file) {
   if (!ALLOWED_TYPES.includes(file.type)) {
@@ -62,12 +66,30 @@ function FilePreview({ archivo, onRemove }) {
   );
 }
 
-export default function Step8Adjuntos({ prevStep, onSubmitFinal, enviando, errorEnvio, siniestroCreado, onFinish }) {
+export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmitFinal, enviando, errorEnvio, siniestroCreado, onFinish }) {
   const [archivos, setArchivos] = useState({});
   const [erroresPorCategoria, setErroresPorCategoria] = useState({});
   const [errorFaltantes, setErrorFaltantes] = useState('');
 
+  const tieneLicencia = formData?.tieneLicencia !== false;
+  const categoriasDocumentacion = getCategoriasDocumentacion(tieneLicencia);
+
+  function handleTieneLicenciaChange(valor) {
+    setFormData((prev) => ({ ...prev, tieneLicencia: valor }));
+    if (!valor) {
+      // Sin licencia: se descartan los archivos que ya se hubieran cargado para esa categoría
+      setArchivos((prev) => {
+        const next = { ...prev };
+        delete next.licencia_frente;
+        delete next.licencia_dorso;
+        return next;
+      });
+      setErroresPorCategoria((prev) => ({ ...prev, licencia_frente: null, licencia_dorso: null }));
+    }
+  }
+
   function handleFilesSelected(cat, fileList) {
+    if (cat.disabled) return;
     const nuevos = Array.from(fileList);
     const invalidos = [];
     const validos = [];
@@ -118,13 +140,15 @@ export default function Step8Adjuntos({ prevStep, onSubmitFinal, enviando, error
     e.preventDefault();
 
     const faltantes = categoriasDocumentacion.filter((cat) => {
-      if (!cat.req) return false;
+      if (cat.disabled) return false;
       const valor = archivos[cat.id];
-      return cat.multiple ? !(valor && valor.length > 0) : !valor;
+      const cantidad = cat.multiple ? (valor || []).length : valor ? 1 : 0;
+      const minimo = cat.multiple ? (cat.minFiles ?? (cat.req ? 1 : 0)) : cat.req ? 1 : 0;
+      return cantidad < minimo;
     });
 
     if (faltantes.length > 0) {
-      setErrorFaltantes(`Faltan archivos obligatorios: ${faltantes.map((c) => c.label).join(', ')}.`);
+      setErrorFaltantes(`Revisá los archivos obligatorios: ${faltantes.map((c) => c.label).join(', ')}.`);
       return;
     }
 
@@ -137,8 +161,11 @@ export default function Step8Adjuntos({ prevStep, onSubmitFinal, enviando, error
       <div className="bg-white p-8 rounded-lg text-center">
         <div className="text-5xl mb-4">✅</div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Reclamo registrado con éxito!</h2>
+        <p className="text-gray-600 mb-2">
+          Tu siniestro quedó cargado con el número <strong>{siniestroCreado.numero}</strong>. Nos pondremos en contacto a la brevedad.
+        </p>
         <p className="text-gray-600 mb-6">
-          Tu siniestro quedó cargado con el número <strong>#{siniestroCreado.id}</strong>. Nos pondremos en contacto a la brevedad.
+          Te vamos a enviar un email con la confirmación y el número de siniestro para que lo tengas a mano.
         </p>
         {onFinish && (
           <button
@@ -165,53 +192,90 @@ export default function Step8Adjuntos({ prevStep, onSubmitFinal, enviando, error
       </div>
 
       <form onSubmit={handleSubmit}>
+        <div className="mb-6 bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center justify-between">
+          <span className="font-semibold text-gray-700 text-sm">¿El conductor cuenta con licencia de conducir?</span>
+          <div className="flex space-x-6">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio" name="tieneLicencia" checked={tieneLicencia === true}
+                onChange={() => handleTieneLicenciaChange(true)}
+                className="w-5 h-5 text-blue-600 focus:ring-0"
+              />
+              <span className="font-medium text-slate-700 text-sm">SÍ</span>
+            </label>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio" name="tieneLicencia" checked={tieneLicencia === false}
+                onChange={() => handleTieneLicenciaChange(false)}
+                className="w-5 h-5 text-blue-600 focus:ring-0"
+              />
+              <span className="font-medium text-slate-700 text-sm">NO</span>
+            </label>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           {categoriasDocumentacion.map((cat) => {
             const valor = archivos[cat.id];
             const lista = cat.multiple ? valor || [] : valor ? [valor] : [];
             const error = erroresPorCategoria[cat.id];
-            const puedeAgregarMas = cat.multiple ? lista.length < cat.maxFiles : lista.length === 0;
+            const puedeAgregarMas = !cat.disabled && (cat.multiple ? lista.length < cat.maxFiles : lista.length === 0);
 
             return (
               <div
                 key={cat.id}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col justify-between hover:border-blue-400 transition-colors bg-gray-50/50"
+                className={`border-2 border-dashed rounded-lg p-4 flex flex-col justify-between transition-colors ${
+                  cat.disabled ? 'border-gray-200 bg-gray-100 opacity-60' : 'border-gray-300 hover:border-blue-400 bg-gray-50/50'
+                }`}
               >
                 <div className="flex justify-between items-start mb-3 gap-2">
                   <label className="font-semibold text-gray-700 text-sm">{cat.label}</label>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    {cat.req && (
-                      <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded">Obligatorio</span>
-                    )}
-                    {cat.multiple && (
-                      <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded">
-                        {lista.length}/{cat.maxFiles}
-                      </span>
+                    {cat.disabled ? (
+                      <span className="bg-gray-200 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded">No aplica</span>
+                    ) : (
+                      <>
+                        {cat.req && (
+                          <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded">Obligatorio</span>
+                        )}
+                        {cat.multiple && (
+                          <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded">
+                            {lista.length}/{cat.maxFiles}
+                            {cat.minFiles ? ` (mín. ${cat.minFiles})` : ''}
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
 
-                {lista.length > 0 && (
-                  <div className={`grid ${cat.multiple ? 'grid-cols-3' : 'grid-cols-1'} gap-2 mb-3`}>
-                    {lista.map((archivo, index) => (
-                      <FilePreview key={`${archivo.name}-${index}`} archivo={archivo} onRemove={() => handleRemoveFile(cat, index)} />
-                    ))}
-                  </div>
-                )}
+                {cat.disabled ? (
+                  <p className="text-xs text-gray-400 italic">No corresponde adjuntar este documento.</p>
+                ) : (
+                  <>
+                    {lista.length > 0 && (
+                      <div className={`grid ${cat.multiple ? 'grid-cols-3' : 'grid-cols-1'} gap-2 mb-3`}>
+                        {lista.map((archivo, index) => (
+                          <FilePreview key={`${archivo.name}-${index}`} archivo={archivo} onRemove={() => handleRemoveFile(cat, index)} />
+                        ))}
+                      </div>
+                    )}
 
-                {puedeAgregarMas && (
-                  <div className="bg-white border border-gray-200 rounded p-4 text-center">
-                    <label className="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded border border-blue-200 cursor-pointer font-medium hover:bg-blue-100 transition-colors inline-block">
-                      {cat.multiple ? 'Agregar archivo(s)' : 'Seleccionar archivo'}
-                      <input
-                        type="file"
-                        accept={ACCEPT_ATTR}
-                        multiple={cat.multiple}
-                        className="hidden"
-                        onChange={(e) => e.target.files.length && handleFilesSelected(cat, e.target.files)}
-                      />
-                    </label>
-                  </div>
+                    {puedeAgregarMas && (
+                      <div className="bg-white border border-gray-200 rounded p-4 text-center">
+                        <label className="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded border border-blue-200 cursor-pointer font-medium hover:bg-blue-100 transition-colors inline-block">
+                          {cat.multiple ? 'Agregar archivo(s)' : 'Seleccionar archivo'}
+                          <input
+                            type="file"
+                            accept={ACCEPT_ATTR}
+                            multiple={cat.multiple}
+                            className="hidden"
+                            onChange={(e) => e.target.files.length && handleFilesSelected(cat, e.target.files)}
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {error && <p className="text-xs text-red-600 mt-2">{error}</p>}

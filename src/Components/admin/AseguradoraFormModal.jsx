@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import aseguradorasService from '../../services/aseguradoras.service.js';
 
-const EMPTY_FORM = { nombre: '', telefono: '', email: '', sitioWeb: '' };
+const EMPTY_FORM = { nombre: '', cuit: '', email: '', sitioWeb: '' };
+const CUIT_REGEX = /^\d{11}$/;
 
 export default function AseguradoraFormModal({ aseguradora, onClose, onSaved, onDeleted }) {
   const isEdit = Boolean(aseguradora);
@@ -9,7 +10,7 @@ export default function AseguradoraFormModal({ aseguradora, onClose, onSaved, on
     isEdit
       ? {
           nombre: aseguradora.nombre || '',
-          telefono: aseguradora.telefono || '',
+          cuit: aseguradora.cuit || '',
           email: aseguradora.email || '',
           sitioWeb: aseguradora.sitioWeb || '',
           activo: aseguradora.activo,
@@ -31,12 +32,16 @@ export default function AseguradoraFormModal({ aseguradora, onClose, onSaved, on
       setError('El nombre es obligatorio');
       return;
     }
+    if (form.cuit.trim() && !CUIT_REGEX.test(form.cuit.trim())) {
+      setError('El CUIT debe tener 11 dígitos numéricos, sin guiones');
+      return;
+    }
     setError('');
     setSaving(true);
     try {
       const payload = {
         nombre: form.nombre.trim(),
-        telefono: form.telefono.trim() || undefined,
+        cuit: form.cuit.trim() || undefined,
         email: form.email.trim() || undefined,
         sitioWeb: form.sitioWeb.trim() || undefined,
       };
@@ -92,11 +97,14 @@ export default function AseguradoraFormModal({ aseguradora, onClose, onSaved, on
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Teléfono</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">CUIT</label>
             <input
-              name="telefono"
-              value={form.telefono}
+              name="cuit"
+              value={form.cuit}
               onChange={handleChange}
+              placeholder="20123456789"
+              maxLength={11}
+              inputMode="numeric"
               className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>

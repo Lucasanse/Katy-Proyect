@@ -28,4 +28,13 @@ function remove(id) {
   return api.delete(`/siniestros/${id}`);
 }
 
-export default { list, getById, create, updateEstado, update, remove };
+function auditoria(id) {
+  return api.get(`/siniestros/${id}/auditoria`);
+}
+
+function consultar(numero, credencial) {
+  const query = new URLSearchParams({ numero, credencial }).toString();
+  return api.get(`/siniestros/consulta?${query}`);
+}
+
+export default { list, getById, create, updateEstado, update, remove, auditoria, consultar };

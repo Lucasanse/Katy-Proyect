@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { ESTADO_LABELS } from '../Components/admin/EstadoBadge.jsx';
-import { formatearFecha } from './formatearFecha.js';
+import { formatearFecha, formatearFechaHora } from './formatearFecha.js';
 
 const ETIQUETAS_TIPO_DOCUMENTO = {
   patente: 'Foto de patente',
@@ -9,7 +9,8 @@ const ETIQUETAS_TIPO_DOCUMENTO = {
   dni_dorso: 'DNI dorso',
   licencia_frente: 'Licencia de conducir frente',
   licencia_dorso: 'Licencia de conducir dorso',
-  cedula: 'Cédula verde o azul',
+  cedula_frente: 'Cédula verde o azul - frente',
+  cedula_dorso: 'Cédula verde o azul - dorso',
   denuncia: 'Denuncia administrativa previa',
   cobertura: 'Certificado de cobertura',
   presupuesto: 'Presupuesto de reparación',
@@ -41,13 +42,18 @@ function linea(label, value) {
 
 function construirTexto(siniestro, nombresArchivos) {
   const lineas = [];
-  lineas.push(`SINIESTRO #${siniestro.id}`);
+  lineas.push(`SINIESTRO ${siniestro.numero || `#${siniestro.id}`}`);
   lineas.push('='.repeat(50));
   lineas.push('');
   lineas.push(linea('Fecha', formatearFecha(siniestro.fechaSiniestro)));
   lineas.push(linea('Hora', siniestro.horaSiniestro));
   lineas.push(linea('Estado', ESTADO_LABELS[siniestro.estado] || siniestro.estado));
   lineas.push(linea('¿Hubo heridos?', siniestro.huboHeridos ? 'Sí' : 'No'));
+  if (siniestro.huboHeridos) {
+    lineas.push(linea('¿Intervención policial?', siniestro.intervencionPolicial ? 'Sí' : 'No'));
+    lineas.push(linea('¿Intervención de ambulancia?', siniestro.intervencionAmbulancia ? 'Sí' : 'No'));
+  }
+  lineas.push(linea('¿El conductor cuenta con licencia?', siniestro.tieneLicencia === false ? 'No' : 'Sí'));
   lineas.push('');
 
   lineas.push('LUGAR DEL HECHO');
@@ -127,7 +133,7 @@ function construirTexto(siniestro, nombresArchivos) {
     lineas.push('No se cargó evidencia para este siniestro.');
   }
   lineas.push('');
-  lineas.push(`Generado el ${new Date().toLocaleString('es-AR')} desde el Panel de Administración.`);
+  lineas.push(`Generado el ${formatearFechaHora(new Date())} desde el Panel de Administración.`);
 
   return lineas.join('\n');
 }
@@ -164,7 +170,7 @@ export async function descargarSiniestroZip(siniestro) {
   const url = URL.createObjectURL(blobZip);
   const enlace = document.createElement('a');
   enlace.href = url;
-  enlace.download = `siniestro-${siniestro.id}.zip`;
+  enlace.download = `${siniestro.numero || `siniestro-${siniestro.id}`}.zip`;
   document.body.appendChild(enlace);
   enlace.click();
   document.body.removeChild(enlace);

@@ -94,7 +94,7 @@ export default function AseguradorasPanel() {
                     {order === 'asc' ? '▲' : '▼'}
                   </span>
                 </th>
-                <th className="text-left font-semibold text-slate-600 px-4 py-3">Teléfono</th>
+                <th className="text-left font-semibold text-slate-600 px-4 py-3">CUIT</th>
                 <th className="text-left font-semibold text-slate-600 px-4 py-3">Email</th>
                 <th className="text-left font-semibold text-slate-600 px-4 py-3">Sitio web</th>
                 <th className="text-left font-semibold text-slate-600 px-4 py-3">Estado</th>
@@ -121,7 +121,7 @@ export default function AseguradorasPanel() {
                     className="cursor-pointer transition-colors border-l-4 border-transparent hover:bg-blue-100 hover:border-blue-500"
                   >
                     <td className="px-4 py-3 text-slate-800 font-medium">{aseguradora.nombre}</td>
-                    <td className="px-4 py-3 text-slate-600">{aseguradora.telefono || '—'}</td>
+                    <td className="px-4 py-3 text-slate-600">{aseguradora.cuit || '—'}</td>
                     <td className="px-4 py-3 text-slate-600">{aseguradora.email || '—'}</td>
                     <td className="px-4 py-3 text-slate-600">{aseguradora.sitioWeb || '—'}</td>
                     <td className="px-4 py-3">

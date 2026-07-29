@@ -202,7 +202,7 @@ function SiniestrosTab() {
                     onClick={() => handleRowClick(siniestro.id)}
                     className="cursor-pointer transition-colors border-l-4 border-transparent hover:bg-blue-100 hover:border-blue-500"
                   >
-                    <td className="px-4 py-3 text-slate-800 font-medium">#{siniestro.id}</td>
+                    <td className="px-4 py-3 text-slate-800 font-medium">{siniestro.numero || `#${siniestro.id}`}</td>
                     <td className="px-4 py-3 text-slate-600">
                       {formatearFecha(siniestro.fechaSiniestro)} {siniestro.horaSiniestro}
                     </td>
