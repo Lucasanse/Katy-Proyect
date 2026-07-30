@@ -4,7 +4,7 @@ import SiniestroDetalle from './SiniestroDetalle.jsx';
 import AseguradorasPanel from './AseguradorasPanel.jsx';
 import Wizard from '../wizard/Wizard.jsx';
 import siniestrosService from '../../services/siniestros.service.js';
-import { formatearFecha } from '../../utils/formatearFecha.js';
+import { formatearFechaHora } from '../../utils/formatearFecha.js';
 import authService from '../../services/auth.service.js';
 import Spinner from '../common/Spinner.jsx';
 
@@ -132,8 +132,8 @@ function SiniestrosTab() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por titular..."
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
+            placeholder="Buscar por titular o productor..."
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-72"
           />
 
           <select
@@ -165,11 +165,18 @@ function SiniestrosTab() {
               <tr>
                 <th className="text-left font-semibold text-slate-600 px-4 py-3">ID</th>
                 <th
-                  onClick={() => handleSort('fechaSiniestro')}
+                  onClick={() => handleSort('createdAt')}
                   className="text-left font-semibold text-slate-600 px-4 py-3 cursor-pointer select-none hover:text-blue-600"
                 >
-                  Fecha
-                  <SortIcon active={sortBy === 'fechaSiniestro'} order={order} />
+                  Fecha de carga
+                  <SortIcon active={sortBy === 'createdAt'} order={order} />
+                </th>
+                <th
+                  onClick={() => handleSort('productor')}
+                  className="text-left font-semibold text-slate-600 px-4 py-3 cursor-pointer select-none hover:text-blue-600"
+                >
+                  Productor
+                  <SortIcon active={sortBy === 'productor'} order={order} />
                 </th>
                 <th
                   onClick={() => handleSort('titular')}
@@ -179,7 +186,6 @@ function SiniestrosTab() {
                   <SortIcon active={sortBy === 'titular'} order={order} />
                 </th>
                 <th className="text-left font-semibold text-slate-600 px-4 py-3">Lugar</th>
-                <th className="text-left font-semibold text-slate-600 px-4 py-3">Evidencias</th>
                 <th className="text-left font-semibold text-slate-600 px-4 py-3">Estado</th>
               </tr>
             </thead>
@@ -206,8 +212,10 @@ function SiniestrosTab() {
                     className="cursor-pointer transition-colors border-l-4 border-transparent hover:bg-blue-100 hover:border-blue-500"
                   >
                     <td className="px-4 py-3 text-slate-800 font-medium">{siniestro.numero || `#${siniestro.id}`}</td>
+                    <td className="px-4 py-3 text-slate-600">{formatearFechaHora(siniestro.createdAt)}</td>
                     <td className="px-4 py-3 text-slate-600">
-                      {formatearFecha(siniestro.fechaSiniestro)} {siniestro.horaSiniestro}
+                      {/* esProductor distingue "no hay productor" de "hay uno pero sin nombre cargado" */}
+                      {(siniestro.productor?.esProductor && siniestro.productor.nombre) || '—'}
                     </td>
                     <td className="px-4 py-3 text-slate-600">
                       {siniestro.titular ? `${siniestro.titular.nombre} ${siniestro.titular.apellido}` : '—'}
@@ -215,7 +223,6 @@ function SiniestrosTab() {
                     <td className="px-4 py-3 text-slate-600">
                       {siniestro.lugarCalle}, {siniestro.lugarLocalidad}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{siniestro._count?.evidencias ?? 0}</td>
                     <td className="px-4 py-3">
                       <EstadoBadge estado={siniestro.estado} />
                     </td>

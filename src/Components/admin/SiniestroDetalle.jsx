@@ -124,7 +124,8 @@ export default function SiniestroDetalle({ siniestro: siniestroInicial, onClose,
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 sticky top-0 bg-white rounded-t-xl gap-4">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Siniestro {siniestro.numero || `#${siniestro.id}`}</h2>
-            <p className="text-sm text-slate-500">{formatearFecha(siniestro.fechaSiniestro)} · {siniestro.horaSiniestro}</p>
+            {/* Fecha de carga del reclamo, no la del accidente: esa ya se muestra en "Datos del siniestro" */}
+            <p className="text-sm text-slate-500">Cargado el {formatearFechaHora(siniestro.createdAt)}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-end">
             <button
