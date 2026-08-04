@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Step1contact from '../step1contact/Step1contact';
 import Step2conductor from '../step2conductor/Step2conductor';
@@ -11,6 +11,7 @@ import Step8Adjuntos from '../step8Adjuntos/Step8Adjuntos';
 import siniestrosService from '../../services/siniestros.service.js';
 import evidenciaService from '../../services/evidencia.service.js';
 import verificacionService from '../../services/verificacion.service.js';
+import EnviandoOverlay from '../common/EnviandoOverlay.jsx';
 
 function buildSiniestroPayload(formData, skipVerification) {
   const payload = {
@@ -124,6 +125,17 @@ export default function Wizard({ skipVerification = false, onCancel }) {
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState('');
   const [enviandoCodigo, setEnviandoCodigo] = useState(false);
+
+  // El plan free del hosting puede tardar en "despertar": avisamos para que no cierren la pestaña mientras se envía
+  useEffect(() => {
+    if (!enviando) return;
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [enviando]);
 
   const goTo = (key) => setStepKey(key);
 
@@ -278,6 +290,8 @@ export default function Wizard({ skipVerification = false, onCancel }) {
         </div>
 
       </div>
+
+      <EnviandoOverlay open={enviando} />
     </div>
   );
 }

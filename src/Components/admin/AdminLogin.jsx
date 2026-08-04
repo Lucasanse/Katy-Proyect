@@ -23,9 +23,21 @@ export default function AdminLogin({ onLoginSuccess }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
+    <div className="min-h-screen flex flex-col bg-slate-50">
+      <div className="bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <p className="font-display font-bold text-sm tracking-wide">Panel de Administración</p>
+          <button
+            onClick={() => { window.location.href = '/'; }}
+            className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
+          >
+            Volver al inicio
+          </button>
+        </div>
+      </div>
+      <div className="flex-grow flex items-center justify-center p-6">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-md border border-slate-200 p-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-1 text-center">Panel de Administración</h1>
+        <h1 className="text-2xl text-slate-900 mb-1 text-center">Panel de Administración</h1>
         <p className="text-sm text-slate-500 mb-6 text-center">Ingresá tus credenciales para continuar</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -74,6 +86,7 @@ export default function AdminLogin({ onLoginSuccess }) {
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
         </form>
+      </div>
       </div>
     </div>
   );

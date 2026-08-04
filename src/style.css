@@ -1,4 +1,50 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+/*
+  Paleta e identidad de marca (Misión Siniestros).
+  "slate" queda como escala neutra (fondos, texto, bordes) y "blue" se
+  reutiliza como color primario/de acento — así toda la app (home,
+  consultas, admin, wizard) hereda la marca sin tocar cada componente.
+  Los extremos exactos de la guía de estilo son slate-200 (#E1E2E1) y
+  slate-900 / blue-600 (#2D3731).
+*/
+@theme {
+  --font-sans: "Jost", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+  --color-slate-50: #f7f8f7;
+  --color-slate-100: #edeeec;
+  --color-slate-200: #e1e2e1;
+  --color-slate-300: #c6c8c7;
+  --color-slate-400: #abafac;
+  --color-slate-500: #90958f;
+  --color-slate-600: #797f7b;
+  --color-slate-700: #636a66;
+  --color-slate-800: #48514b;
+  --color-slate-900: #2d3731;
+  --color-slate-950: #1c231d;
+
+  --color-blue-50: #f2f4f1;
+  --color-blue-100: #e3e7e1;
+  --color-blue-200: #c7cfc3;
+  --color-blue-300: #a7b3a1;
+  --color-blue-400: #85937e;
+  --color-blue-500: #66755f;
+  --color-blue-600: #2d3731;
+  --color-blue-700: #1e2620;
+  --color-blue-800: #161c17;
+  --color-blue-900: #10140f;
+  --color-blue-950: #0a0d0a;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}

@@ -33,14 +33,14 @@ const Step7Verificacion = ({ emailDestino, onVerificar, onReenviar, enviandoCodi
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md max-w-md mx-auto text-center border border-gray-100">
+    <div className="bg-white p-8 rounded-lg shadow-md max-w-md mx-auto text-center border border-slate-100">
       <div className="mb-6">
         <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-xl">
           ✉️
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Verificación de Seguridad</h2>
-        <p className="text-gray-600 text-sm">
-          Hemos enviado un código de 6 dígitos a <span className="font-semibold text-gray-800">{emailDestino}</span>.
+        <h2 className="text-2xl font-bold text-slate-800 mb-2">Verificación de Seguridad</h2>
+        <p className="text-slate-600 text-sm">
+          Hemos enviado un código de 6 dígitos a <span className="font-semibold text-slate-800">{emailDestino}</span>.
           Por favor, ingrésalo para acceder a la carga de documentación.
         </p>
       </div>
@@ -59,7 +59,7 @@ const Step7Verificacion = ({ emailDestino, onVerificar, onReenviar, enviandoCodi
             className={`w-full text-center tracking-[0.5em] text-2xl font-mono py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
               error
                 ? 'border-red-500 focus:ring-red-200 bg-red-50'
-                : 'border-gray-300 focus:ring-blue-200 focus:border-blue-500'
+                : 'border-slate-300 focus:ring-blue-200 focus:border-blue-500'
             }`}
             required
           />
@@ -75,7 +75,7 @@ const Step7Verificacion = ({ emailDestino, onVerificar, onReenviar, enviandoCodi
         </button>
       </form>
 
-      <div className="mt-6 pt-4 border-t border-gray-100 text-xs text-gray-500">
+      <div className="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500">
         ¿No recibiste el correo? Revisá tu carpeta de Spam o{' '}
         <button
           type="button"

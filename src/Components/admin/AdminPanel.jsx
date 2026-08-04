@@ -280,19 +280,31 @@ export default function AdminPanel({ admin, onLogout }) {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <div className="bg-slate-900 text-white sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div>
-            <h1 className="font-bold text-lg text-slate-900">Panel de Administración</h1>
-            <p className="text-xs text-slate-500">{admin?.email}</p>
+            <p className="font-display font-bold text-sm tracking-wide">Panel de Administración</p>
+            <p className="text-xs text-slate-300">{admin?.email}</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm font-medium text-slate-600 hover:text-red-600 transition-colors"
-          >
-            Cerrar sesión
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => { window.location.href = '/'; }}
+              className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
+            >
+              Volver al inicio
+            </button>
+            <span className="h-4 w-px bg-slate-700" aria-hidden="true" />
+            <button
+              onClick={handleLogout}
+              className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
+            >
+              Cerrar sesión
+            </button>
+          </div>
         </div>
+      </div>
+
+      <div className="bg-white border-b border-slate-200 sticky top-16 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1">
           {TABS.map((t) => (
             <button
@@ -308,7 +320,7 @@ export default function AdminPanel({ admin, onLogout }) {
             </button>
           ))}
         </div>
-      </header>
+      </div>
 
       {tab === 'cargar' ? (
         <Wizard skipVerification onCancel={() => setTab('siniestros')} />

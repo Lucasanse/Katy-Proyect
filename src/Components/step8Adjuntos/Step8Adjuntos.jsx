@@ -163,8 +163,8 @@ export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmi
         <div className="text-5xl mb-4">✅</div>
         {esAdmin ? (
           <>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Siniestro cargado correctamente</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-2xl font-bold text-slate-800 mb-2">Siniestro cargado correctamente</h2>
+            <p className="text-slate-600 mb-4">
               Quedó registrado con el número <strong>{siniestroCreado.numero}</strong>.
             </p>
             <p className="text-sm text-amber-900 bg-amber-50 border-l-4 border-amber-500 rounded-r-md px-4 py-3 mb-6 text-left">
@@ -175,11 +175,11 @@ export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmi
           </>
         ) : (
           <>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Reclamo registrado con éxito!</h2>
-            <p className="text-gray-600 mb-2">
+            <h2 className="text-2xl font-bold text-slate-800 mb-2">¡Reclamo registrado con éxito!</h2>
+            <p className="text-slate-600 mb-2">
               Tu siniestro quedó cargado con el número <strong>{siniestroCreado.numero}</strong>. Nos pondremos en contacto a la brevedad.
             </p>
-            <p className="text-gray-600 mb-6">
+            <p className="text-slate-600 mb-6">
               Te vamos a enviar un email con la confirmación y el número de siniestro para que lo tengas a mano.
             </p>
           </>
@@ -198,11 +198,11 @@ export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmi
   }
 
   return (
-    <div className="bg-white p-6 md:p-8 rounded-lg shadow-md border border-gray-100">
-      <div className="border-b border-gray-200 pb-4 mb-6">
+    <div className="bg-white p-6 md:p-8 rounded-lg shadow-md border border-slate-100">
+      <div className="border-b border-slate-200 pb-4 mb-6">
         <span className="text-xs font-bold tracking-wider text-blue-600 uppercase">Último paso</span>
-        <h2 className="text-2xl font-bold text-gray-800 mt-1">Gestión de Archivos Adjuntos</h2>
-        <p className="text-gray-600 text-sm mt-1">
+        <h2 className="text-2xl font-bold text-slate-800 mt-1">Gestión de Archivos Adjuntos</h2>
+        <p className="text-slate-600 text-sm mt-1">
           Adjuntá la evidencia y documentación. Formatos aceptados: {ALLOWED_EXTENSIONS_LABEL} (máx. 5MB por archivo).
           Los marcados como <strong>Obligatorio</strong> son necesarios para poder enviar el reclamo; el resto es opcional.
         </p>
@@ -210,7 +210,7 @@ export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmi
 
       <form onSubmit={handleSubmit}>
         <div className="mb-6 bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center justify-between">
-          <span className="font-semibold text-gray-700 text-sm">¿El conductor cuenta con licencia de conducir?</span>
+          <span className="font-semibold text-slate-700 text-sm">¿El conductor cuenta con licencia de conducir?</span>
           <div className="flex space-x-6">
             <label className="flex items-center space-x-2 cursor-pointer">
               <input
@@ -242,14 +242,14 @@ export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmi
               <div
                 key={cat.id}
                 className={`border-2 border-dashed rounded-lg p-4 flex flex-col justify-between transition-colors ${
-                  cat.disabled ? 'border-gray-200 bg-gray-100 opacity-60' : 'border-gray-300 hover:border-blue-400 bg-gray-50/50'
+                  cat.disabled ? 'border-slate-200 bg-slate-100 opacity-60' : 'border-slate-300 hover:border-blue-400 bg-slate-50/50'
                 }`}
               >
                 <div className="flex justify-between items-start mb-3 gap-2">
-                  <label className="font-semibold text-gray-700 text-sm">{cat.label}</label>
+                  <label className="font-semibold text-slate-700 text-sm">{cat.label}</label>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     {cat.disabled ? (
-                      <span className="bg-gray-200 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded">No aplica</span>
+                      <span className="bg-slate-200 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded">No aplica</span>
                     ) : (
                       <>
                         {cat.req && (
@@ -267,7 +267,7 @@ export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmi
                 </div>
 
                 {cat.disabled ? (
-                  <p className="text-xs text-gray-400 italic">No corresponde adjuntar este documento.</p>
+                  <p className="text-xs text-slate-400 italic">No corresponde adjuntar este documento.</p>
                 ) : (
                   <>
                     {lista.length > 0 && (
@@ -279,7 +279,7 @@ export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmi
                     )}
 
                     {puedeAgregarMas && (
-                      <div className="bg-white border border-gray-200 rounded p-4 text-center">
+                      <div className="bg-white border border-slate-200 rounded p-4 text-center">
                         <label className="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded border border-blue-200 cursor-pointer font-medium hover:bg-blue-100 transition-colors inline-block">
                           {cat.multiple ? 'Agregar archivo(s)' : 'Seleccionar archivo'}
                           <input
@@ -309,7 +309,7 @@ export default function Step8Adjuntos({ formData, setFormData, prevStep, onSubmi
           <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">{errorEnvio}</p>
         )}
 
-        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+        <div className="flex justify-between items-center pt-4 border-t border-slate-200">
           <button
             type="button"
             onClick={prevStep}
