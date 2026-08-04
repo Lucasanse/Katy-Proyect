@@ -41,14 +41,20 @@ export default function ConsultarReclamo() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] p-6">
-      <div className="max-w-lg w-full">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2 text-center">Consultar Reclamo</h1>
-        <p className="text-slate-600 mb-8 text-center">
+    <div className="flex flex-col">
+      <div className="bg-slate-50 border-b border-slate-200 py-12 px-6 text-center">
+        <span className="inline-block text-xs font-semibold tracking-widest uppercase text-blue-600 mb-3">
+          Estado de tu reclamo
+        </span>
+        <h1 className="text-3xl md:text-4xl text-slate-900 mb-3">Consultar Reclamo</h1>
+        <p className="text-slate-600 max-w-lg mx-auto">
           Ingresá el número de siniestro y la matrícula del proveedor de seguros (o tu DNI, si el reclamo no tiene
           productor de seguros cargado) para ver el estado de tu reclamo.
         </p>
+      </div>
 
+      <div className="flex flex-col items-center p-6">
+      <div className="max-w-lg w-full -mt-8">
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-md border border-slate-200 space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Número de siniestro</label>
@@ -140,6 +146,7 @@ export default function ConsultarReclamo() {
             </p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

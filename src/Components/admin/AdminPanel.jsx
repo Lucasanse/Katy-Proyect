@@ -3,6 +3,7 @@ import EstadoBadge, { ESTADO_LABELS } from './EstadoBadge.jsx';
 import SiniestroDetalle from './SiniestroDetalle.jsx';
 import AseguradorasPanel from './AseguradorasPanel.jsx';
 import Wizard from '../wizard/Wizard.jsx';
+import Header from '../layout/Header.jsx';
 import siniestrosService from '../../services/siniestros.service.js';
 import { formatearFechaHora } from '../../utils/formatearFecha.js';
 import authService from '../../services/auth.service.js';
@@ -280,19 +281,28 @@ export default function AdminPanel({ admin, onLogout }) {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      {/* Mismo header de la web pública: navega a Inicio / Consultar Reclamo, nunca agrega enlaces a /admin */}
+      <Header
+        onHomeClick={() => { window.location.href = '/'; }}
+        onConsultarClick={() => { window.location.href = '/consultas'; }}
+      />
+
+      <div className="bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
           <div>
-            <h1 className="font-bold text-lg text-slate-900">Panel de Administración</h1>
-            <p className="text-xs text-slate-500">{admin?.email}</p>
+            <p className="font-display font-bold text-sm tracking-wide">Panel de Administración</p>
+            <p className="text-xs text-slate-300">{admin?.email}</p>
           </div>
           <button
             onClick={handleLogout}
-            className="text-sm font-medium text-slate-600 hover:text-red-600 transition-colors"
+            className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
           >
             Cerrar sesión
           </button>
         </div>
+      </div>
+
+      <div className="bg-white border-b border-slate-200 sticky top-16 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1">
           {TABS.map((t) => (
             <button
@@ -308,7 +318,7 @@ export default function AdminPanel({ admin, onLogout }) {
             </button>
           ))}
         </div>
-      </header>
+      </div>
 
       {tab === 'cargar' ? (
         <Wizard skipVerification onCancel={() => setTab('siniestros')} />
