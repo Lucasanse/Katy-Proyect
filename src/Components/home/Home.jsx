@@ -44,30 +44,32 @@ export default function Home({ onStart }) {
           </div>
 
           {/* Motivo gráfico: solo tipografía y color, sin logo ni imágenes */}
-          <div className="relative hidden md:block h-80">
-            <div className="absolute top-0 right-8 w-64 h-56 rounded-2xl border-2 border-slate-300 bg-white shadow-sm p-6 flex flex-col justify-center gap-3">
-              <p className="text-xs font-semibold tracking-widest uppercase text-slate-400">
-                Tu reclamo, siempre a la vista
-              </p>
-              <ul className="space-y-2 text-sm text-slate-700">
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600" /> 100% online
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600" /> Seguimiento en tiempo real
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600" /> Sin papeleo
-                </li>
-              </ul>
-            </div>
-            <div className="absolute bottom-0 left-0 w-64 h-56 rounded-2xl bg-blue-600 shadow-xl flex items-center justify-center p-6">
-              <p className="font-display font-extrabold text-white text-2xl leading-snug text-center">
-                MISIÓN
-                <br />
-                SINIESTROS
-              </p>
-            </div>
+          <div className="hidden md:block rounded-3xl bg-slate-900 shadow-xl p-10">
+            <p className="font-display font-extrabold text-white text-2xl leading-snug mb-8">
+              MISIÓN
+              <br />
+              SINIESTROS
+            </p>
+            <ul className="space-y-4">
+              <li className="flex items-center gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-white text-xs">
+                  ✓
+                </span>
+                <span className="text-slate-200">100% online</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-white text-xs">
+                  ✓
+                </span>
+                <span className="text-slate-200">Seguimiento en tiempo real</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-white text-xs">
+                  ✓
+                </span>
+                <span className="text-slate-200">Sin papeleo</span>
+              </li>
+            </ul>
           </div>
         </div>
       </section>

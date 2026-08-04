@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import authService from '../../services/auth.service.js';
 import Spinner from '../common/Spinner.jsx';
-import Header from '../layout/Header.jsx';
 
 export default function AdminLogin({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -25,7 +24,17 @@ export default function AdminLogin({ onLoginSuccess }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
-      <Header onHomeClick={() => { window.location.href = '/'; }} onConsultarClick={() => { window.location.href = '/consultas'; }} />
+      <div className="bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <p className="font-display font-bold text-sm tracking-wide">Panel de Administración</p>
+          <button
+            onClick={() => { window.location.href = '/'; }}
+            className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
+          >
+            Volver al inicio
+          </button>
+        </div>
+      </div>
       <div className="flex-grow flex items-center justify-center p-6">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-md border border-slate-200 p-8">
         <h1 className="text-2xl text-slate-900 mb-1 text-center">Panel de Administración</h1>
