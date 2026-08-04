@@ -23,7 +23,7 @@ export default function ConsultarReclamo() {
     if (!numero.trim() || !credencial.trim()) {
       setError(
         tieneProductor
-          ? 'Completá el número de siniestro y la matrícula del proveedor de seguros'
+          ? 'Completá el número de siniestro y la matrícula del productor de seguros'
           : 'Completá el número de siniestro y el DNI del titular del vehículo',
       );
       return;
@@ -48,7 +48,7 @@ export default function ConsultarReclamo() {
         </span>
         <h1 className="text-3xl md:text-4xl text-slate-900 mb-3">Consultar Reclamo</h1>
         <p className="text-slate-600 max-w-lg mx-auto">
-          Ingresá el número de siniestro y la matrícula del proveedor de seguros (o tu DNI, si el reclamo no tiene
+          Ingresá el número de siniestro y la matrícula del productor de seguros (o tu DNI, si el reclamo no tiene
           productor de seguros cargado) para ver el estado de tu reclamo.
         </p>
       </div>
@@ -68,7 +68,7 @@ export default function ConsultarReclamo() {
           </div>
 
           <div>
-            <span className="block text-xs font-semibold text-slate-500 uppercase mb-1">¿Cargaste productor de seguros?</span>
+            <span className="block text-xs font-semibold text-slate-500 uppercase mb-1">¿Cargaste el siniestro siendo productor de seguros?</span>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -93,13 +93,13 @@ export default function ConsultarReclamo() {
 
           <div>
             <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">
-              {tieneProductor ? 'Matrícula del proveedor de seguros' : 'DNI del titular del vehículo'}
+              {tieneProductor ? 'Matrícula del productor de seguros' : 'DNI del titular del vehículo'}
             </label>
             <input
               type="text"
               value={credencial}
               onChange={(e) => setCredencial(e.target.value)}
-              placeholder={tieneProductor ? 'Ej: PROD-1234' : 'Ej: 30123456'}
+              placeholder={tieneProductor ? 'Ingrese acá su matrícula' : 'Ej: 30123456'}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
