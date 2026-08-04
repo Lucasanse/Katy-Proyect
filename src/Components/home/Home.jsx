@@ -20,57 +20,36 @@ export default function Home({ onStart }) {
   return (
     <div className="flex flex-col">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-slate-50">
-        <div className="max-w-7xl mx-auto px-6 py-20 md:py-28 grid md:grid-cols-2 gap-16 items-center">
-          <div className="text-center md:text-left">
-            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-blue-600 mb-4">
-              Gestión de siniestros
-            </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl text-slate-900 mb-6 leading-tight">
-              Denunciá tu siniestro sin vueltas
-            </h1>
-            <p className="text-lg text-slate-600 mb-10 max-w-md mx-auto md:mx-0">
-              Iniciá la carga de tu reclamo de manera rápida y ordenada. Tené a mano los datos de
-              contacto, del siniestro y de la compañía aseguradora.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-              <button
-                onClick={onStart}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-10 rounded-lg shadow-lg transition-transform hover:scale-[1.03]"
-              >
-                Iniciar Nuevo Reclamo
-              </button>
-            </div>
-          </div>
+      <section className="bg-slate-50">
+        <div className="max-w-3xl mx-auto px-6 py-14 md:py-20 text-center">
+          <span className="inline-block text-xs font-semibold tracking-widest uppercase text-blue-600 mb-4">
+            Gestión de siniestros
+          </span>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl text-slate-900 mb-6 leading-tight">
+            Denunciá tu siniestro sin vueltas
+          </h1>
+          <p className="text-lg text-slate-600 mb-8 max-w-xl mx-auto">
+            Iniciá la carga de tu reclamo de manera rápida y ordenada. Tené a mano los datos de
+            contacto, del siniestro y de la compañía aseguradora.
+          </p>
+          <button
+            onClick={onStart}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-10 rounded-lg shadow-lg transition-transform hover:scale-[1.03] mb-10"
+          >
+            Iniciar Nuevo Reclamo
+          </button>
 
-          {/* Motivo gráfico: solo tipografía y color, sin logo ni imágenes */}
-          <div className="hidden md:block rounded-3xl bg-slate-900 shadow-xl p-10">
-            <p className="font-display font-extrabold text-white text-2xl leading-snug mb-8">
-              MISIÓN
-              <br />
-              SINIESTROS
-            </p>
-            <ul className="space-y-4">
-              <li className="flex items-center gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-white text-xs">
-                  ✓
-                </span>
-                <span className="text-slate-200">100% online</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-white text-xs">
-                  ✓
-                </span>
-                <span className="text-slate-200">Seguimiento en tiempo real</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-white text-xs">
-                  ✓
-                </span>
-                <span className="text-slate-200">Sin papeleo</span>
-              </li>
-            </ul>
-          </div>
+          <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+            <li className="flex items-center gap-2 text-sm text-slate-600">
+              <span className="text-blue-600 font-bold">✓</span> 100% online
+            </li>
+            <li className="flex items-center gap-2 text-sm text-slate-600">
+              <span className="text-blue-600 font-bold">✓</span> Seguimiento en tiempo real
+            </li>
+            <li className="flex items-center gap-2 text-sm text-slate-600">
+              <span className="text-blue-600 font-bold">✓</span> Sin papeleo
+            </li>
+          </ul>
         </div>
       </section>
 
