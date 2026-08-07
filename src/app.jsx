@@ -23,7 +23,7 @@ function App() {
         <main className="flex-grow">
           <ConsultarReclamo />
         </main>
-        <Footer />
+        <Footer onStart={() => { window.location.href = '/'; }} />
       </div>
     );
   }
@@ -41,7 +41,7 @@ function App() {
         {view === 'wizard' && <Wizard onCancel={() => setView('home')} />}
       </main>
 
-      <Footer />
+      <Footer onStart={() => setView('wizard')} />
     </div>
   );
 }

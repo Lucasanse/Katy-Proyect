@@ -80,21 +80,6 @@ export default function Home({ onStart }) {
         </div>
       </section>
 
-      {/* CTA final */}
-      <section className="bg-slate-900 py-16">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-2xl md:text-3xl text-white mb-4">¿Listo para empezar?</h2>
-          <p className="text-slate-300 mb-8">
-            Iniciá tu denuncia ahora mismo, no lleva más de unos minutos.
-          </p>
-          <button
-            onClick={onStart}
-            className="bg-white hover:bg-slate-100 text-slate-900 font-semibold py-4 px-10 rounded-lg shadow-lg transition-transform hover:scale-[1.03]"
-          >
-            Iniciar Nuevo Reclamo
-          </button>
-        </div>
-      </section>
     </div>
   );
 }
