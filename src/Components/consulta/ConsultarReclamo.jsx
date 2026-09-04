@@ -4,8 +4,8 @@ import siniestrosService from '../../services/siniestros.service.js';
 import { formatearFecha, formatearFechaHora } from '../../utils/formatearFecha.js';
 import Spinner from '../common/Spinner.jsx';
 
-// TODO: completar con el email de contacto real para consultas sobre un reclamo.
-const EMAIL_CONSULTAS = '';
+// Casilla que usa la administradora para consultas sobre un reclamo.
+const EMAIL_CONSULTAS = 'direccion@misionsiniestros.com.ar';
 
 export default function ConsultarReclamo() {
   const [numero, setNumero] = useState('');

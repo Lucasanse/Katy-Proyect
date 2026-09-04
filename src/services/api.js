@@ -26,17 +26,26 @@ async function request(path, { method = 'GET', body, headers = {} } = {}) {
   const token = getToken();
   const isFormData = body instanceof FormData;
 
-  const response = await fetch(`${API_URL}${path}`, {
-    method,
-    credentials: 'include',
-    headers: {
-      // Con FormData no seteamos Content-Type: el browser arma el boundary del multipart solo
-      ...(body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-    body: isFormData ? body : body ? JSON.stringify(body) : undefined,
-  });
+  let response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      method,
+      credentials: 'include',
+      headers: {
+        // Con FormData no seteamos Content-Type: el browser arma el boundary del multipart solo
+        ...(body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers,
+      },
+      body: isFormData ? body : body ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    // fetch tira un TypeError ("Failed to fetch") cuando no llega a conectar con el
+    // servidor (caído, sin red, CORS, etc.), no cuando el servidor responde con un error.
+    // Ese mensaje técnico no le dice nada al usuario, así que lo traducimos acá, en el
+    // único lugar por el que pasan todas las llamadas al backend.
+    throw new ApiError('Error en el servidor', 0);
+  }
 
   const contentType = response.headers.get('content-type') || '';
   const data = contentType.includes('application/json') ? await response.json() : null;

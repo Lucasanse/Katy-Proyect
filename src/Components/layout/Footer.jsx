@@ -23,7 +23,10 @@ export default function Footer({ onStart }) {
             &copy; {new Date().getFullYear()} Misión Siniestros. Todos los derechos reservados.
           </p>
           <p className="text-xs mt-2 text-slate-500">
-            Contacto: misionsiniestros@gmail.com
+            Contacto:{' '}
+            <a href="mailto:direccion@misionsiniestros.com.ar" className="hover:underline">
+              direccion@misionsiniestros.com.ar
+            </a>
           </p>
         </div>
       </div>
