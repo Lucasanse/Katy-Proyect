@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import aseguradorasService from '../../services/aseguradoras.service.js';
+import { esPatenteValida, PATENTE_ERROR } from '../../utils/validarPatente.js';
 
 export default function Step4tercero({ formData, setFormData, nextStep, prevStep }) {
   const [errors, setErrors] = useState([]);
@@ -54,11 +55,10 @@ export default function Step4tercero({ formData, setFormData, nextStep, prevStep
         return "Este DNI ya fue ingresado en otro tercero";
       }
     } else if (field === "patente") {
-      const patenteRegex = /^([A-Z]{3}\d{3}|[A-Z]{2}\d{3}[A-Z]{2})$/;
       const patenteClean = value.toUpperCase().trim();
       
-      if (!patenteRegex.test(patenteClean)) {
-        return "Formato inválido. Debe ser XXX111 o XX111XX";
+      if (!esPatenteValida(patenteClean)) {
+        return PATENTE_ERROR;
       }
       
       // Validación cruzada con la patente del titular
@@ -171,7 +171,7 @@ export default function Step4tercero({ formData, setFormData, nextStep, prevStep
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase">Patente del vehículo</label>
                   <input 
-                    type="text" value={tercero.patente} onChange={(e) => handleTerceroChange(index, 'patente', e.target.value)} placeholder="Ej: ABC123 o AB123CD"
+                    type="text" value={tercero.patente} onChange={(e) => handleTerceroChange(index, 'patente', e.target.value)} placeholder="Ej: AB123CD o A123BCD (moto)"
                     className={`w-full mt-2 border-0 border-b-2 ${errors[index]?.patente ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 uppercase focus:outline-none bg-transparent`}
                   />
                   {errors[index]?.patente && <span className="text-xs text-red-500 mt-1 block">{errors[index]?.patente}</span>}
