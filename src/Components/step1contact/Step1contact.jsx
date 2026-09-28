@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import aseguradorasService from '../../services/aseguradoras.service.js';
+import { esPatenteValida, PATENTE_ERROR } from '../../utils/validarPatente.js';
 
 export default function Step1contact({ formData, setFormData, nextStep }) {
   const [errors, setErrors] = useState({});
@@ -28,9 +29,8 @@ export default function Step1contact({ formData, setFormData, nextStep }) {
         error = "Número de documento inválido";
       }
     } else if (name === "titularPatente") {
-      const patenteRegex = /^([A-Z]{3}\d{3}|[A-Z]{2}\d{3}[A-Z]{2})$/;
-      if (!patenteRegex.test(value.toUpperCase())) {
-        error = "Formato inválido. Debe ser XXX111 o XX111XX";
+      if (!esPatenteValida(value)) {
+        error = PATENTE_ERROR;
       }
     } else if (name === "titularEmail") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -126,7 +126,7 @@ export default function Step1contact({ formData, setFormData, nextStep }) {
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase">Patente del vehículo</label>
           <input 
-            type="text" name="titularPatente" value={formData?.titularPatente || ''} onChange={handleChange} placeholder="Ej: ABC123 o AB123CD"
+            type="text" name="titularPatente" value={formData?.titularPatente || ''} onChange={handleChange} placeholder="Ej: AB123CD o A123BCD (moto)"
             className={`w-full mt-2 border-0 border-b-2 ${errors.titularPatente ? 'border-red-500' : 'border-slate-300'} focus:border-blue-600 focus:ring-0 pb-1 text-slate-800 uppercase focus:outline-none`}
           />
           {errors.titularPatente && <span className="text-xs text-red-500 mt-1 block">{errors.titularPatente}</span>}
